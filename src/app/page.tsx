@@ -12,6 +12,7 @@ export default function Home() {
   const [activeLocacion, setActiveLocacion] = useState<string>("all");
   const [activeYear, setActiveYear] = useState<number>(new Date().getFullYear());
   const [registros, setRegistros] = useState<{actual: RegistroDiario, anterior: RegistroDiario | null}[]>([]);
+  const [totals, setTotals] = useState({ actual: 0, anterior: 0 });
   const [loading, setLoading] = useState(true);
   const [errorStatus, setErrorStatus] = useState<string | null>(null);
   const [isMounted, setIsMounted] = useState(false);
@@ -57,12 +58,19 @@ export default function Home() {
       }
 
       // Para cada registro actual, intentar buscar su comparativa del año anterior
-      for (const actual of filteredRegs.slice(0, 10)) { 
+      let totalActual = 0;
+      let totalAnterior = 0;
+
+      for (const actual of filteredRegs.slice(0, 20)) { 
         const anterior = await registroService.getRegistroAnterior(actual.locacionId, actual.fecha);
         data.push({ actual, anterior });
+        
+        if (actual.status === "operativo") totalActual += actual.tickets;
+        if (anterior && anterior.status === "operativo") totalAnterior += anterior.tickets;
       }
       
       setRegistros(data);
+      setTotals({ actual: totalActual, anterior: totalAnterior });
     } catch (error: any) {
       console.error("Error en init:", error);
       setErrorStatus(error.message || "Error desconocido al conectar con Firebase");
@@ -157,10 +165,36 @@ export default function Home() {
                 <p className="text-gray-400 font-bold uppercase text-xs tracking-widest">Sincronizando...</p>
               </div>
             ) : registros.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {registros.map((reg, idx) => (
-                  <ResumenCard key={idx} actual={reg.actual} anterior={reg.anterior} />
-                ))}
+              <div className="space-y-6">
+                {/* Resumen Global */}
+                <div className="bg-indigo-900 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden">
+                  <div className="absolute top-0 right-0 p-8 opacity-10">
+                    <svg width="100" height="100" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                  </div>
+                  <div className="relative z-10">
+                    <h3 className="text-xs font-black uppercase tracking-[0.2em] opacity-60">Resumen General {activeYear}</h3>
+                    <div className="flex items-baseline gap-4 mt-2">
+                      <span className="text-5xl font-black">{totals.actual.toLocaleString()}</span>
+                      <span className="text-sm font-bold opacity-60 uppercase">Tickets Totales</span>
+                    </div>
+                    {totals.anterior > 0 && (
+                      <div className="mt-4 flex items-center gap-2">
+                        <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase ${
+                          totals.actual >= totals.anterior ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"
+                        }`}>
+                          {totals.actual >= totals.anterior ? "↑ Incremento" : "↓ Descenso"} {(((totals.actual / totals.anterior) - 1) * 100).toFixed(1)}%
+                        </div>
+                        <span className="text-[10px] opacity-40 font-bold uppercase">vs año anterior ({totals.anterior.toLocaleString()})</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {registros.map((reg, idx) => (
+                    <ResumenCard key={idx} actual={reg.actual} anterior={reg.anterior} />
+                  ))}
+                </div>
               </div>
             ) : (
               <div className="text-center py-20 bg-white rounded-3xl border-2 border-dashed border-gray-200 shadow-sm">
