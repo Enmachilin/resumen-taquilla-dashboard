@@ -14,6 +14,8 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const auth = getAuth(app);
+
+// Solo inicializar Auth en el cliente para evitar errores durante el build estático
+const auth = typeof window !== 'undefined' ? getAuth(app) : null;
 
 export { app, db, auth };
