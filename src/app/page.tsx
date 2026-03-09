@@ -10,14 +10,33 @@ export default function Home() {
   const [view, setView] = useState<"dash" | "admin">("dash");
   const [locaciones, setLocaciones] = useState<Locacion[]>([]);
   const [activeLocacion, setActiveLocacion] = useState<string>("all");
+  const [activeYear, setActiveYear] = useState<number>(new Date().getFullYear());
   const [registros, setRegistros] = useState<{actual: RegistroDiario, anterior: RegistroDiario | null}[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorStatus, setErrorStatus] = useState<string | null>(null);
   const [isMounted, setIsMounted] = useState(false);
 
+  // Años disponibles para el filtro (ej: desde 2024 hasta el actual)
+  const availableYears = [2024, 2025, 2026];
+
   useEffect(() => {
     setIsMounted(true);
+    // Recuperar última plaza activa
+    const savedLoc = localStorage.getItem("lastActiveLocacion");
+    if (savedLoc) setActiveLocacion(savedLoc);
+    
+    // Recuperar último año activo
+    const savedYear = localStorage.getItem("lastActiveYear");
+    if (savedYear) setActiveYear(parseInt(savedYear));
   }, []);
+
+  // Guardar preferencias cuando cambien
+  useEffect(() => {
+    if (isMounted) {
+      localStorage.setItem("lastActiveLocacion", activeLocacion);
+      localStorage.setItem("lastActiveYear", activeYear.toString());
+    }
+  }, [activeLocacion, activeYear, isMounted]);
 
   const init = async () => {
     setLoading(true);
@@ -30,13 +49,15 @@ export default function Home() {
       
       const data: {actual: RegistroDiario, anterior: RegistroDiario | null}[] = [];
       
-      // Filtrar por plaza activa y solo los más recientes (ej. hoy o últimos reportados)
-      const filteredRegs = activeLocacion === "all" 
-        ? allRegs 
-        : allRegs.filter(r => r.locacionId === activeLocacion);
+      // Filtrar por plaza activa y por AÑO seleccionado
+      let filteredRegs = allRegs.filter(r => r.fecha.startsWith(activeYear.toString()));
+      
+      if (activeLocacion !== "all") {
+        filteredRegs = filteredRegs.filter(r => r.locacionId === activeLocacion);
+      }
 
       // Para cada registro actual, intentar buscar su comparativa del año anterior
-      for (const actual of filteredRegs.slice(0, 10)) { // Mostrar los últimos 10
+      for (const actual of filteredRegs.slice(0, 10)) { 
         const anterior = await registroService.getRegistroAnterior(actual.locacionId, actual.fecha);
         data.push({ actual, anterior });
       }
@@ -51,8 +72,8 @@ export default function Home() {
   };
 
   useEffect(() => {
-    init();
-  }, [activeLocacion, view]);
+    if (isMounted) init();
+  }, [activeLocacion, activeYear, view, isMounted]);
 
   return (
     <main className="min-h-screen bg-gray-50 text-gray-900 pb-24">
@@ -108,6 +129,23 @@ export default function Home() {
                     }`}
                   >
                     {l.nombre}
+                  </button>
+                ))}
+              </div>
+
+              {/* Filtro por Año */}
+              <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide -mx-2 px-2">
+                {availableYears.map((y) => (
+                  <button
+                    key={y}
+                    onClick={() => setActiveYear(y)}
+                    className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase whitespace-nowrap transition-all border ${
+                      activeYear === y
+                        ? "bg-gray-900 text-white border-gray-900 shadow-sm"
+                        : "bg-white text-gray-400 border-gray-100 hover:border-gray-200"
+                    }`}
+                  >
+                    Año {y}
                   </button>
                 ))}
               </div>
