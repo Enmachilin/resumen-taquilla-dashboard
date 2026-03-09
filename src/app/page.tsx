@@ -12,6 +12,12 @@ export default function Home() {
   const [activeLocacion, setActiveLocacion] = useState<string>("all");
   const [registros, setRegistros] = useState<{actual: RegistroDiario, anterior: RegistroDiario | null}[]>([]);
   const [loading, setLoading] = useState(true);
+  const [errorStatus, setErrorStatus] = useState<string | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const init = async () => {
     setLoading(true);
@@ -36,8 +42,9 @@ export default function Home() {
       }
       
       setRegistros(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error en init:", error);
+      setErrorStatus(error.message || "Error desconocido al conectar con Firebase");
     } finally {
       setLoading(false);
     }
@@ -129,6 +136,13 @@ export default function Home() {
                 </button>
               </div>
             )}
+          </div>
+        )}
+
+        {errorStatus && (
+          <div className="mt-8 p-4 bg-red-50 border-2 border-red-100 rounded-2xl text-red-600 text-sm font-bold animate-bounce">
+            ⚠️ ERROR: {errorStatus}
+            <p className="mt-2 text-xs font-normal opacity-80">Verifica las variables de entorno NEXT_PUBLIC en Netlify.</p>
           </div>
         )}
 
