@@ -255,8 +255,20 @@ export default function ComparativaView() {
                                                 <span className="text-sm font-black text-indigo-600">Bs {selectedBar.total_bs?.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}</span>
                                             </div>
                                             <div className="flex flex-col items-end border-l border-indigo-100 pl-4">
-                                                <span className="text-indigo-400 font-bold text-[10px] uppercase">Tickets</span>
-                                                <span className="text-sm font-black text-indigo-600">{selectedBar.total_tickets?.toLocaleString('es-VE') || 0} <span className="text-[10px]">u.</span></span>
+                                                <div className="flex items-center gap-1.5 mb-1">
+                                                    <svg viewBox="0 0 24 24" className="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                        {/* Ticket posterior */}
+                                                        <path d="M14.5 3.5l6 6c.8.8.8 2 0 2.8l-2.5 2.5" />
+                                                        {/* Ticket frontal */}
+                                                        <path d="M3.5 14.5l7 7c.8.8 2 .8 2.8 0l7-7c.8-.8.8-2 0-2.8l-7-7c-.8-.8-2-.8-2.8 0l-7 7c-.8.8-.8 2 0 2.8z" />
+                                                        <path d="M6.5 11.5a1.5 1.5 0 0 1 0 3M17.5 11.5a1.5 1.5 0 0 0 0 3" />
+                                                        <path d="M8.5 8.5l7 7" strokeDasharray="2 2" opacity="0.6" />
+                                                    </svg>
+                                                    <span className="text-indigo-400 font-bold text-[10px] uppercase">Tickets</span>
+                                                </div>
+                                                <span className="text-sm font-black text-indigo-600">
+                                                    {selectedBar.total_tickets?.toLocaleString('es-VE') || 0} <span className="text-[10px]">u.</span>
+                                                </span>
                                             </div>
                                         </div>
                                     </div>
@@ -266,7 +278,12 @@ export default function ComparativaView() {
                                                 <span className="text-indigo-900 text-xs w-[40px] uppercase font-black">{b.name}</span>
                                                 <div className="flex gap-4 items-center">
                                                     <div className="hidden md:flex flex-col items-end min-w-[50px] md:min-w-[80px]">
-                                                        <span className="text-[8px] text-gray-400 font-bold uppercase">Tickets</span>
+                                                        <div className="flex items-center gap-1 mb-0.5">
+                                                            <svg viewBox="0 0 24 24" className="w-2.5 h-2.5 text-gray-400" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                                <path d="M3.5 14.5l7 7c.8.8 2 .8 2.8 0l7-7c.8-.8.8-2 0-2.8l-7-7c-.8-.8-2-.8-2.8 0l-7 7c-.8.8-.8 2 0 2.8z" />
+                                                            </svg>
+                                                            <span className="text-[8px] text-gray-400 font-bold uppercase">Tickets</span>
+                                                        </div>
                                                         <span className="font-bold text-gray-700 text-[10px] md:text-[11px]">{b.tickets.toLocaleString('es-VE')}</span>
                                                     </div>
                                                     <div className="flex flex-col items-end min-w-[70px] md:min-w-[100px] md:border-l md:border-gray-100 md:pl-4">
