@@ -43,36 +43,45 @@ export default function ResumenCard({ actual, anterior }: ResumenCardProps) {
   }
 
   return (
-    <div className={`p-5 rounded-2xl text-white shadow-lg transition-transform hover:scale-105 border-b-4 border-black/10 ${colorClass}`}>
-      <div className="flex justify-between items-start">
-        <div>
-          <h3 className="text-xs font-black opacity-80 uppercase tracking-widest flex items-center">
+    <div className={`p-4 rounded-xl text-white shadow-lg transition-transform hover:scale-105 border-b-4 border-black/10 ${colorClass}`}>
+      <div className="flex flex-col sm:flex-row justify-between items-start gap-2">
+        <div className="min-w-0 flex-1">
+          <h3 className="text-[10px] font-black opacity-80 uppercase tracking-widest truncate">
             {actual.locacionId.replace(/-/g, ' ')}
-            {trendIndicator}
           </h3>
-          <p className="text-3xl font-black mt-1">
-            {isOperativo ? `${actual.tickets} Tickets` : actual.status.toUpperCase()}
+          <p className="text-2xl font-black mt-1 leading-none">
+            {isOperativo ? `${actual.tickets}` : actual.status.toUpperCase()}
+            {isOperativo && <span className="text-sm ml-2 opacity-60">Tickets</span>}
           </p>
+          {isOperativo && (
+            <div className="flex items-center gap-2 mt-1 whitespace-nowrap">
+              <span className="text-[11px] font-bold opacity-90">
+                 {actual.totalCalculado.toLocaleString('es-VE', { minimumFractionDigits: 0 })} <span className="text-[8px]">Bs.</span>
+              </span>
+              <span className="text-[10px] font-bold text-white bg-white/20 px-1.5 py-0.5 rounded-md">
+                ${(actual.precioTicket ? actual.tickets * actual.precioTicket : actual.tickets).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
+              </span>
+            </div>
+          )}
         </div>
         {isOperativo && anterior && (
-          <div className="text-right bg-white/10 p-2 rounded-lg backdrop-blur-sm">
-            <span className="text-[10px] opacity-80 block font-bold mb-1">CIE: {anterior.tickets}</span>
-            <span className="text-xl font-black">
-              {diferencia > 0 ? '+' : ''}{diferencia.toFixed(0)}%
-            </span>
+          <div className="text-right bg-white/10 p-1.5 rounded-lg backdrop-blur-sm self-end sm:self-start">
+            <span className="text-[9px] opacity-80 block font-bold leading-none mb-1">vs {anterior.tickets}</span>
+            <div className="flex items-center justify-end gap-1">
+              <span className="text-sm font-black">
+                {diferencia > 0 ? '+' : ''}{diferencia.toFixed(0)}%
+              </span>
+              <span className="text-[10px]">{diferencia > 0 ? '↑' : '↓'}</span>
+            </div>
           </div>
         )}
       </div>
       
       {isOperativo && (
-        <div className="mt-4 pt-4 border-t border-white/20 flex justify-between items-end">
-          <div>
-            <span className="text-[10px] opacity-70 block font-bold">FECHA REPORTE</span>
-            <span className="text-sm font-bold">{actual.fecha}</span>
-          </div>
-          <div className="text-right">
-            <span className="text-[10px] opacity-70 block font-bold">BCV: {actual.tasaDolar}</span>
-          </div>
+        <div className="mt-3 pt-3 border-t border-white/10 flex justify-between items-center">
+          <span className="text-[9px] font-bold opacity-60">{actual.fecha}</span>
+          {actual.precioTicket && <span className="text-[9px] font-bold opacity-90 bg-black/20 px-2 py-0.5 rounded-full shadow-inner shadow-black/30">Precio: ${actual.precioTicket}</span>}
+          <span className="text-[9px] font-bold opacity-60">BCV: {actual.tasaDolar}</span>
         </div>
       )}
       

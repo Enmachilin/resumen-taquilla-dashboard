@@ -1,12 +1,12 @@
 import { db } from "@/lib/firebase";
-import { 
-  collection, 
-  doc, 
-  setDoc, 
-  getDoc, 
-  query, 
-  where, 
-  getDocs, 
+import {
+  collection,
+  doc,
+  setDoc,
+  getDoc,
+  query,
+  where,
+  getDocs,
   serverTimestamp,
   orderBy
 } from "firebase/firestore";
@@ -33,11 +33,13 @@ export const registroService = {
   async getRegistrosByLocacion(locacionId: string) {
     const q = query(
       collection(db, REGISTROS_COLLECTION),
-      where("locacionId", "==", locacionId),
-      orderBy("fecha", "desc")
+      where("locacionId", "==", locacionId)
     );
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => doc.data() as RegistroDiario);
+    const data = querySnapshot.docs.map(doc => doc.data() as RegistroDiario);
+
+    // Sort in Javascript to avoid requiring a Firebase Composite Index
+    return data.sort((a, b) => b.fecha.localeCompare(a.fecha));
   },
 
   async getRegistroAnterior(locacionId: string, fechaActual: string) {
@@ -46,7 +48,7 @@ export const registroService = {
     const mes = String(date.getMonth() + 1).padStart(2, '0');
     const dia = String(date.getDate()).padStart(2, '0');
     const idAnterior = `${yearAnterior}-${mes}-${dia}_${locacionId}`;
-    
+
     return this.getRegistro(idAnterior);
   },
 
@@ -65,7 +67,7 @@ export const locacionService = {
     const querySnapshot = await getDocs(collection(db, LOCACIONES_COLLECTION));
     return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Locacion));
   },
-  
+
   async addLocacion(locacion: Locacion) {
     const docRef = doc(db, LOCACIONES_COLLECTION, locacion.id);
     await setDoc(docRef, locacion);

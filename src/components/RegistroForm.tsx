@@ -16,6 +16,7 @@ export default function RegistroForm() {
     fecha: new Date().toISOString().split("T")[0],
     locacionId: "",
     tickets: 0,
+    precioTicket: "1$", // Precio por defecto como string para el UI
     tasaDolar: 36.5,
     status: "operativo" as RegistroStatus,
     motivoInactividad: "",
@@ -75,12 +76,14 @@ export default function RegistroForm() {
 
     try {
       const id = `${formData.fecha}_${formData.locacionId}`;
-      const totalCalculado = formData.status === "operativo" ? formData.tickets * formData.tasaDolar : 0;
+      const precioNeto = parseFloat(formData.precioTicket.replace(/[^0-9.]/g, "")) || 0;
+      const totalCalculado = formData.status === "operativo" ? formData.tickets * precioNeto * formData.tasaDolar : 0;
 
       await registroService.saveRegistro({
         ...formData,
         id,
         tickets: formData.status === "operativo" ? Number(formData.tickets) : 0,
+        precioTicket: Number(precioNeto),
         tasaDolar: Number(formData.tasaDolar.toFixed(2)),
         totalCalculado: Number(totalCalculado.toFixed(2)),
       });
@@ -196,21 +199,53 @@ export default function RegistroForm() {
 
         {formData.status === "operativo" ? (
           <>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Tickets Vendidos</label>
-              <input
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border text-black text-lg font-bold"
-                value={formData.tickets || ""}
-                onChange={(e) => {
-                  const val = e.target.value.replace(/\D/g, "");
-                  setFormData({ ...formData, tickets: Number(val) });
-                }}
-                placeholder="0"
-              />
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700">Tickets Vendidos</label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  required
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border text-black text-lg font-bold"
+                  value={formData.tickets || ""}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/\D/g, "");
+                    setFormData({ ...formData, tickets: Number(val) });
+                  }}
+                  placeholder="0"
+                />
+              </div>
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700">Precio Ticket</label>
+                <div className="relative mt-1 border border-gray-300 rounded-md shadow-sm focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500 overflow-hidden bg-white">
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    required
+                    className="block w-full border-0 p-2 text-black text-lg font-bold pr-8 text-right bg-transparent focus:ring-0"
+                    value={formData.precioTicket.replace("$", "")}
+                    onChange={(e) => {
+                      let val = e.target.value.replace(/[^0-9.]/g, "");
+                      // Prevenir multiples puntos decimales
+                      const parts = val.split(".");
+                      if (parts.length > 2) val = parts[0] + "." + parts.slice(1).join("");
+                      setFormData({ ...formData, precioTicket: val ? `${val}$` : "" });
+                    }}
+                    onBlur={() => {
+                      if (formData.precioTicket && !formData.precioTicket.endsWith("$")) {
+                        setFormData({ ...formData, precioTicket: `${formData.precioTicket}$` });
+                      } else if (!formData.precioTicket) {
+                        setFormData({ ...formData, precioTicket: "1$" });
+                      }
+                    }}
+                    placeholder="1"
+                  />
+                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                    <span className="text-gray-500 sm:text-lg font-bold">$</span>
+                  </div>
+                </div>
+              </div>
             </div>
             <div>
               <div className="flex justify-between items-center mb-1">
@@ -225,6 +260,18 @@ export default function RegistroForm() {
               </div>
               <div className="mt-1 block w-full rounded-md border-gray-100 bg-gray-50 p-2.5 border text-black font-semibold">
                 {formData.tasaDolar.toFixed(2)} <span className="text-[10px] text-gray-400 font-bold ml-1">Bs/USD</span>
+              </div>
+            </div>
+
+            <div className="p-4 bg-indigo-50 border-2 border-indigo-100 rounded-xl">
+              <span className="text-[10px] text-indigo-400 font-black uppercase tracking-widest block mb-1">Total Est. a Reportar</span>
+              <div className="flex justify-between items-end mt-1">
+                <div className="text-2xl font-black text-indigo-900">
+                  {(formData.tickets * (parseFloat(formData.precioTicket.replace(/[^0-9.]/g, "")) || 0) * formData.tasaDolar).toLocaleString('es-VE', { minimumFractionDigits: 2 })} <span className="text-base text-indigo-700/80">Bs.</span>
+                </div>
+                <div className="text-xl font-bold text-indigo-700 bg-indigo-100/50 px-3 py-1 rounded-lg">
+                  <span className="text-sm mr-0.5">$</span>{(formData.tickets * (parseFloat(formData.precioTicket.replace(/[^0-9.]/g, "")) || 0)).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </div>
               </div>
             </div>
           </>

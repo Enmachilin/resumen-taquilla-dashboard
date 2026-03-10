@@ -5,8 +5,9 @@ export interface RegistroDiario {
   fecha: string; // YYYY-MM-DD
   locacionId: string;
   tickets: number;
+  precioTicket?: number; // nuevo campo para precio variable
   tasaDolar: number;
-  totalCalculado: number; // tickets * tasaDolar (si el ticket vale $1)
+  totalCalculado: number; // tickets * precioTicket * tasaDolar
   status: RegistroStatus;
   motivoInactividad?: string;
   comentarios?: string;
