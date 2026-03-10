@@ -23,10 +23,27 @@ export default function RegistroForm() {
     comentarios: "",
   });
 
+  const [existingRegistro, setExistingRegistro] = useState<RegistroDiario | null>(null);
+
   useEffect(() => {
     fetchLocaciones();
     fetchTasaBCV();
   }, []);
+
+  // Verificar si ya existe un registro para la fecha/locación seleccionada
+  useEffect(() => {
+    if (formData.fecha && formData.locacionId) {
+      checkExisting();
+    } else {
+      setExistingRegistro(null);
+    }
+  }, [formData.fecha, formData.locacionId]);
+
+  async function checkExisting() {
+    const id = `${formData.fecha}_${formData.locacionId}`;
+    const existing = await registroService.getRegistro(id);
+    setExistingRegistro(existing);
+  }
 
   async function fetchLocaciones() {
     const data = await locacionService.getLocaciones();
@@ -51,7 +68,7 @@ export default function RegistroForm() {
 
   const handleAddLocacion = async () => {
     if (!newLocacionName.trim()) return;
-    
+
     setLoading(true);
     try {
       const id = newLocacionName.toLowerCase().trim().replace(/\s+/g, '-');
@@ -88,8 +105,9 @@ export default function RegistroForm() {
         totalCalculado: Number(totalCalculado.toFixed(2)),
       });
 
-      setMessage("✅ Registro guardado con éxito");
-      // Opcional: limpiar campos tras guardar
+      setMessage(existingRegistro ? "⚠️ Registro SOBREESCRITO con éxito" : "✅ Registro guardado con éxito");
+      setExistingRegistro(null); // Limpiar tras guardar
+
       if (formData.status === "operativo") {
         setFormData(prev => ({ ...prev, tickets: 0 }));
       }
@@ -104,7 +122,7 @@ export default function RegistroForm() {
   return (
     <div className="max-w-md mx-auto p-6 bg-white rounded-xl shadow-lg border border-gray-100">
       <h2 className="text-2xl font-bold mb-6 text-gray-800">Cargar Jornada</h2>
-      
+
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700">Fecha</label>
@@ -138,11 +156,10 @@ export default function RegistroForm() {
             <button
               type="button"
               onClick={() => setIsAddingLocacion(!isAddingLocacion)}
-              className={`mb-[2px] p-2.5 rounded-md transition-all border ${
-                isAddingLocacion 
-                  ? "bg-red-50 text-red-600 border-red-200 rotate-45" 
-                  : "bg-gray-100 text-gray-600 border-gray-300 hover:bg-gray-200"
-              }`}
+              className={`mb-[2px] p-2.5 rounded-md transition-all border ${isAddingLocacion
+                ? "bg-red-50 text-red-600 border-red-200 rotate-45"
+                : "bg-gray-100 text-gray-600 border-gray-300 hover:bg-gray-200"
+                }`}
               title={isAddingLocacion ? "Cancelar" : "Agregar nueva locación"}
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
@@ -185,11 +202,10 @@ export default function RegistroForm() {
                 key={s}
                 type="button"
                 onClick={() => setFormData({ ...formData, status: s })}
-                className={`px-4 py-2 rounded-full text-xs font-bold capitalize transition-colors border ${
-                  formData.status === s
-                    ? "bg-indigo-600 text-white border-indigo-600"
-                    : "bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100"
-                }`}
+                className={`px-4 py-2 rounded-full text-xs font-bold capitalize transition-colors border ${formData.status === s
+                  ? "bg-indigo-600 text-white border-indigo-600"
+                  : "bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100"
+                  }`}
               >
                 {s}
               </button>
@@ -250,8 +266,8 @@ export default function RegistroForm() {
             <div>
               <div className="flex justify-between items-center mb-1">
                 <label className="block text-sm font-medium text-gray-700">Tasa Dólar (BCV)</label>
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={fetchTasaBCV}
                   className="text-[10px] text-indigo-600 font-bold hover:underline"
                 >
@@ -299,12 +315,47 @@ export default function RegistroForm() {
           />
         </div>
 
+        {existingRegistro && (
+          <div className="p-4 bg-amber-50 border-2 border-amber-200 rounded-xl animate-pulse">
+            <div className="flex items-center gap-2 mb-2 text-amber-700">
+              <span className="text-xl">⚠️</span>
+              <span className="font-extrabold text-xs uppercase tracking-tight">Atención: Registro Existente</span>
+            </div>
+            <p className="text-[11px] text-amber-800 font-medium leading-relaxed mb-3">
+              Ya existe una jornada guardada para esta plaza en la fecha seleccionada. Si guardas, <span className="font-black underline">se borrarán los datos anteriores</span>.
+            </p>
+            <div className="bg-white/50 p-2 rounded-lg border border-amber-100 text-[10px]">
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <span className="block text-amber-600/60 font-black uppercase">Estado Anterior</span>
+                  <span className="font-bold text-amber-900 uppercase italic">{existingRegistro.status}</span>
+                </div>
+                {existingRegistro.status === 'operativo' && (
+                  <div>
+                    <span className="block text-amber-600/60 font-black uppercase">Tickets</span>
+                    <span className="font-bold text-amber-900">{existingRegistro.tickets} unidades</span>
+                  </div>
+                )}
+                {existingRegistro.status === 'operativo' && (
+                  <div className="col-span-2 mt-1 pt-1 border-t border-amber-100">
+                    <span className="block text-amber-600/60 font-black uppercase">Recaudación</span>
+                    <span className="font-bold text-amber-900">{existingRegistro.totalCalculado.toLocaleString('es-VE')} Bs.</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         <button
           type="submit"
           disabled={loading || !formData.locacionId}
-          className="w-full bg-indigo-600 text-white font-black py-4 px-4 rounded-xl hover:bg-indigo-700 transition-all active:scale-95 shadow-lg shadow-indigo-100 disabled:opacity-50 mt-4"
+          className={`w-full font-black py-4 px-4 rounded-xl transition-all active:scale-95 shadow-lg mt-4 ${existingRegistro
+              ? "bg-amber-600 hover:bg-amber-700 shadow-amber-100 text-white"
+              : "bg-indigo-600 hover:bg-indigo-700 shadow-indigo-100 text-white"
+            }`}
         >
-          {loading ? "PROCESANDO..." : "GUARDAR JORNADA"}
+          {loading ? "PROCESANDO..." : existingRegistro ? "SOBREESCRIBIR JORNADA" : "GUARDAR JORNADA"}
         </button>
 
         {message && (
