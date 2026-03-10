@@ -116,43 +116,63 @@ export default function RegistrosView() {
                         </h3>
                     </div>
 
-                    <div className="grid gap-3">
-                        {filteredRegistros.length > 0 ? (
-                            filteredRegistros.map((r) => (
-                                <div key={r.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center hover:shadow-md transition-shadow">
-                                    <div className="flex flex-col">
-                                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-tighter">{r.fecha}</span>
-                                        <span className={`text-[10px] font-bold uppercase mt-0.5 px-2 py-0.5 rounded-md inline-block w-fit ${r.status === 'operativo' ? 'bg-green-50 text-green-600' : 'bg-amber-50 text-amber-600'
-                                            }`}>
-                                            {r.status}
-                                        </span>
+                    <div className="space-y-8">
+                        {Array.from(new Set(filteredRegistros.map(r => r.fecha.split("-")[1]))).sort((a, b) => b.localeCompare(a)).map(month => {
+                            const monthRegistros = filteredRegistros.filter(r => r.fecha.split("-")[1] === month);
+                            const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+                            const monthName = monthNames[parseInt(month) - 1];
+
+                            return (
+                                <div key={month} className="space-y-3">
+                                    <div className="flex items-center gap-4 px-2">
+                                        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-indigo-100 to-transparent"></div>
+                                        <h4 className="text-[10px] font-black text-indigo-900 uppercase tracking-[0.2em] bg-indigo-50 px-3 py-1 rounded-full border border-indigo-100">
+                                            {monthName}
+                                        </h4>
+                                        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-indigo-100 to-transparent"></div>
                                     </div>
 
-                                    {r.status === 'operativo' ? (
-                                        <div className="flex gap-4 items-center">
-                                            <div className="hidden sm:flex flex-col items-end">
-                                                <span className="text-xs font-bold text-gray-900">{r.tickets} <span className="text-[10px] font-normal text-gray-400">tickets</span></span>
-                                                <span className="text-[9px] text-gray-400 font-bold">${r.precioTicket} c/u</span>
-                                            </div>
-                                            <div className="bg-indigo-50/50 p-2 rounded-lg text-right min-w-[110px] border border-indigo-100/50">
-                                                <span className="block text-xs font-black text-indigo-900">
-                                                    {r.totalCalculado.toLocaleString('es-VE')} <span className="text-[8px]">Bs</span>
-                                                </span>
-                                                <div className="flex items-center justify-end gap-1 opacity-70">
-                                                    <span className="text-[10px] font-bold text-indigo-600">${(r.tickets * (r.precioTicket || 1)).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                                    <div className="grid gap-3">
+                                        {monthRegistros.map((r) => (
+                                            <div key={r.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center hover:shadow-md transition-shadow">
+                                                <div className="flex flex-col">
+                                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-tighter">{r.fecha}</span>
+                                                    <span className={`text-[10px] font-bold uppercase mt-0.5 px-2 py-0.5 rounded-md inline-block w-fit ${r.status === 'operativo' ? 'bg-green-50 text-green-600' : 'bg-amber-50 text-amber-600'
+                                                        }`}>
+                                                        {r.status}
+                                                    </span>
                                                 </div>
+
+                                                {r.status === 'operativo' ? (
+                                                    <div className="flex gap-4 items-center">
+                                                        <div className="hidden sm:flex flex-col items-end">
+                                                            <span className="text-xs font-bold text-gray-900">{r.tickets} <span className="text-[10px] font-normal text-gray-400">tickets</span></span>
+                                                            <span className="text-[9px] text-gray-400 font-bold">${r.precioTicket} c/u</span>
+                                                        </div>
+                                                        <div className="bg-indigo-50/50 p-2 rounded-lg text-right min-w-[110px] border border-indigo-100/50">
+                                                            <span className="block text-xs font-black text-indigo-900">
+                                                                {r.totalCalculado.toLocaleString('es-VE')} <span className="text-[8px]">Bs</span>
+                                                            </span>
+                                                            <div className="flex items-center justify-end gap-1 opacity-70">
+                                                                <span className="text-[10px] font-bold text-indigo-600">${(r.tickets * (r.precioTicket || 1)).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex-1 ml-4 text-right">
+                                                        <span className="text-[11px] italic text-gray-400 line-clamp-1">
+                                                            {r.motivoInactividad}
+                                                        </span>
+                                                    </div>
+                                                )}
                                             </div>
-                                        </div>
-                                    ) : (
-                                        <div className="flex-1 ml-4 text-right">
-                                            <span className="text-[11px] italic text-gray-400 line-clamp-1">
-                                                {r.motivoInactividad}
-                                            </span>
-                                        </div>
-                                    )}
+                                        ))}
+                                    </div>
                                 </div>
-                            ))
-                        ) : (
+                            );
+                        })}
+
+                        {filteredRegistros.length === 0 && (
                             <div className="text-center py-12 bg-white rounded-2xl border-2 border-dashed border-gray-100 text-gray-400">
                                 No hay registros para este año
                             </div>
