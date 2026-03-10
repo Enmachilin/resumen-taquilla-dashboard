@@ -24,3 +24,25 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Reset de Focus para Gráficas */
+.recharts-primitive-dot-dot,
+.recharts-rectangle,
+.recharts-bar-rectangle,
+.recharts-sector,
+.recharts-dot,
+.recharts-wrapper,
+svg {
+  outline: none !important;
+  -webkit-tap-highlight-color: transparent;
+}
+
+*:focus {
+  outline: none !important;
+}
+
+/* Restaurar focus solo para accesibilidad por teclado si es necesario */
+*:focus-visible {
+  outline: 2px solid var(--indigo-500, #6366f1);
+  outline-offset: 2px;
+}
