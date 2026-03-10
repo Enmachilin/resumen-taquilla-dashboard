@@ -27,8 +27,17 @@ export default function RegistrosView() {
     }, [selectedLocacion]);
 
     async function fetchLocaciones() {
-        const data = await locacionService.getLocaciones();
-        setLocaciones(data);
+        const [locs, allRegistros] = await Promise.all([
+            locacionService.getLocaciones(),
+            registroService.getAllRegistros()
+        ]);
+
+        setLocaciones(locs);
+
+        // Si hay registros, seleccionar la plaza del registro más reciente
+        if (allRegistros.length > 0 && !selectedLocacion) {
+            setSelectedLocacion(allRegistros[0].locacionId);
+        }
     }
 
     async function fetchRegistros() {
