@@ -256,13 +256,19 @@ export default function ComparativaView() {
                                             </div>
                                             <div className="flex flex-col items-end border-l border-indigo-100 pl-4">
                                                 <div className="flex items-center gap-1.5 mb-1">
-                                                    <svg viewBox="0 0 24 24" className="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                        {/* Ticket posterior */}
-                                                        <path d="M14.5 3.5l6 6c.8.8.8 2 0 2.8l-2.5 2.5" />
-                                                        {/* Ticket frontal */}
-                                                        <path d="M3.5 14.5l7 7c.8.8 2 .8 2.8 0l7-7c.8-.8.8-2 0-2.8l-7-7c-.8-.8-2-.8-2.8 0l-7 7c-.8.8-.8 2 0 2.8z" />
-                                                        <path d="M6.5 11.5a1.5 1.5 0 0 1 0 3M17.5 11.5a1.5 1.5 0 0 0 0 3" />
-                                                        <path d="M8.5 8.5l7 7" strokeDasharray="2 2" opacity="0.6" />
+                                                    <svg viewBox="0 0 24 24" className="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                                                        <g transform="rotate(-45 12 12)">
+                                                            {/* Ticket Posterior (Sombra/Desplazado) */}
+                                                            <path
+                                                                d="M3 5h14v2a1.5 1.5 0 0 1 0 3v2H3v-2a1.5 1.5 0 0 1 0-3V5z"
+                                                                className="opacity-30"
+                                                                transform="translate(2, -2.5)"
+                                                            />
+                                                            {/* Ticket Frontal (Principal) */}
+                                                            <path d="M3 8h14v2a1.5 1.5 0 0 1 0 3v2H3v-2a1.5 1.5 0 0 1 0-3V8z" />
+                                                            {/* Línea de Perforación */}
+                                                            <line x1="13" y1="8" x2="13" y2="15" strokeDasharray="1.5 1.5" className="opacity-60" />
+                                                        </g>
                                                     </svg>
                                                     <span className="text-indigo-400 font-bold text-[10px] uppercase">Tickets</span>
                                                 </div>
@@ -279,8 +285,10 @@ export default function ComparativaView() {
                                                 <div className="flex gap-4 items-center">
                                                     <div className="hidden md:flex flex-col items-end min-w-[50px] md:min-w-[80px]">
                                                         <div className="flex items-center gap-1 mb-0.5">
-                                                            <svg viewBox="0 0 24 24" className="w-2.5 h-2.5 text-gray-400" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                                                <path d="M3.5 14.5l7 7c.8.8 2 .8 2.8 0l7-7c.8-.8.8-2 0-2.8l-7-7c-.8-.8-2-.8-2.8 0l-7 7c-.8.8-.8 2 0 2.8z" />
+                                                            <svg viewBox="0 0 24 24" className="w-2.5 h-2.5 text-gray-400" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                                                <g transform="rotate(-45 12 12)">
+                                                                    <path d="M3 8h14v2a1.5 1.5 0 0 1 0 3v2H3v-2a1.5 1.5 0 0 1 0-3V8z" />
+                                                                </g>
                                                             </svg>
                                                             <span className="text-[8px] text-gray-400 font-bold uppercase">Tickets</span>
                                                         </div>
