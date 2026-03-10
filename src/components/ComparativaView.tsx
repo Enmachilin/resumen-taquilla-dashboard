@@ -283,18 +283,18 @@ export default function ComparativaView() {
                                             <div key={i} className="flex justify-between items-center bg-white p-3 rounded-xl shadow-sm border border-indigo-50/50">
                                                 <span className="text-indigo-900 text-xs w-[40px] uppercase font-black">{b.name}</span>
                                                 <div className="flex gap-4 items-center">
-                                                    <div className="hidden md:flex flex-col items-end min-w-[50px] md:min-w-[80px]">
+                                                    <div className="flex flex-col items-end min-w-[45px] md:min-w-[80px]">
                                                         <div className="flex items-center gap-1 mb-0.5">
                                                             <svg viewBox="0 0 24 24" className="w-2.5 h-2.5 text-gray-400" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                                                                 <g transform="rotate(-45 12 12)">
                                                                     <path d="M3 8h14v2a1.5 1.5 0 0 1 0 3v2H3v-2a1.5 1.5 0 0 1 0-3V8z" />
                                                                 </g>
                                                             </svg>
-                                                            <span className="text-[8px] text-gray-400 font-bold uppercase">Tickets</span>
+                                                            <span className="text-[7px] md:text-[8px] text-gray-400 font-bold uppercase">Tickets</span>
                                                         </div>
                                                         <span className="font-bold text-gray-700 text-[10px] md:text-[11px]">{b.tickets.toLocaleString('es-VE')}</span>
                                                     </div>
-                                                    <div className="flex flex-col items-end min-w-[70px] md:min-w-[100px] md:border-l md:border-gray-100 md:pl-4">
+                                                    <div className="flex flex-col items-end min-w-[65px] md:min-w-[100px] border-l border-gray-100 pl-4">
                                                         <span className="text-[8px] text-gray-400 font-bold uppercase">Bs</span>
                                                         <span className="font-bold text-gray-700 text-[10px] md:text-[11px]">Bs {b.bs.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                                     </div>
