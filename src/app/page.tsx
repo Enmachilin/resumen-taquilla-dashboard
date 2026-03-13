@@ -3,10 +3,9 @@
 import { useState, useEffect } from "react";
 import RegistroForm from "@/components/RegistroForm";
 import ComparativaView from "@/components/ComparativaView";
-import RegistrosView from "@/components/RegistrosView";
 
 export default function Home() {
-  const [view, setView] = useState<"admin" | "comparativa" | "registros">("comparativa");
+  const [view, setView] = useState<"admin" | "comparativa">("comparativa");
   const [isMounted, setIsMounted] = useState(false);
   const [errorStatus, setErrorStatus] = useState<string | null>(null);
 
@@ -27,13 +26,6 @@ export default function Home() {
           </h1>
           <div className="flex gap-2">
             <button
-              onClick={() => setView("registros")}
-              className={`text-[10px] font-black uppercase px-3 py-2 rounded-lg border transition-all ${view === "registros" ? "bg-indigo-600 text-white border-indigo-600" : "bg-indigo-50 text-indigo-600 border-indigo-100 hover:bg-white"
-                }`}
-            >
-              Registros
-            </button>
-            <button
               onClick={() => setView(view === "admin" ? "comparativa" : "admin")}
               className={`text-[10px] font-black uppercase px-3 py-2 rounded-lg border transition-all ${view === "admin" ? "bg-indigo-600 text-white border-indigo-600" : "bg-indigo-50 text-indigo-600 border-indigo-100 hover:bg-white"
                 }`}
@@ -44,7 +36,7 @@ export default function Home() {
         </div>
       </header>
 
-      <div className="max-w-4xl mx-auto p-6">
+      <div className="max-w-7xl mx-auto px-2 md:px-4 py-6">
         {errorStatus && (
           <div className="mt-8 p-4 bg-red-50 border-2 border-red-100 rounded-2xl text-red-600 text-sm font-bold animate-bounce">
             ⚠️ ERROR: {errorStatus}
@@ -62,10 +54,6 @@ export default function Home() {
           <ComparativaView />
         )}
 
-        {view === "registros" && (
-          <RegistrosView />
-        )}
-
       </div>
 
       {/* Mobile Nav */}
@@ -73,10 +61,6 @@ export default function Home() {
         <button onClick={() => setView("comparativa")} className={`flex flex-col items-center gap-1 transition-all ${view === "comparativa" ? "text-indigo-600 scale-110" : "text-gray-400 opacity-60 hover:opacity-100"}`}>
           <div className={`w-8 h-8 rounded-xl border-2 transition-colors flex items-center justify-center text-lg ${view === "comparativa" ? "border-indigo-600 bg-indigo-50 shadow-sm" : "border-gray-300"}`}>📊</div>
           <span className="text-[10px] font-black uppercase tracking-tighter">Comparativa</span>
-        </button>
-        <button onClick={() => setView("registros")} className={`flex flex-col items-center gap-1 transition-all ${view === "registros" ? "text-indigo-600 scale-110" : "text-gray-400 opacity-60 hover:opacity-100"}`}>
-          <div className={`w-8 h-8 rounded-xl border-2 transition-colors flex items-center justify-center text-lg ${view === "registros" ? "border-indigo-600 bg-indigo-50 shadow-sm" : "border-gray-300"}`}>📂</div>
-          <span className="text-[10px] font-black uppercase tracking-tighter">Registros</span>
         </button>
         <button onClick={() => setView("admin")} className={`flex flex-col items-center gap-1 transition-all ${view === "admin" ? "text-indigo-600 scale-110" : "text-gray-400 opacity-60 hover:opacity-100"}`}>
           <div className={`w-8 h-8 rounded-full border-2 transition-colors flex items-center justify-center font-black text-lg ${view === "admin" ? "border-indigo-600 bg-indigo-50 shadow-sm" : "border-gray-300"}`}>+</div>
