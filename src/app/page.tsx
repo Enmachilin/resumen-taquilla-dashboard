@@ -24,13 +24,31 @@ export default function Home() {
           >
             RESUMEN<span className="text-indigo-600">TAQUILLA</span>
           </h1>
-          <div className="flex gap-2">
+
+          <div className="flex bg-gray-100 p-1 rounded-xl relative w-36 sm:w-64 shadow-inner border border-gray-100">
+            {/* Indicador de fondo animado */}
+            <div 
+              className={`absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] bg-white rounded-lg shadow-sm transition-all duration-300 ease-in-out ${
+                view === "comparativa" ? "translate-x-0" : "translate-x-[calc(100%+4px)]"
+              }`}
+            />
             <button
-              onClick={() => setView(view === "admin" ? "comparativa" : "admin")}
-              className={`text-[10px] font-black uppercase px-3 py-2 rounded-lg border transition-all ${view === "admin" ? "bg-indigo-600 text-white border-indigo-600" : "bg-indigo-50 text-indigo-600 border-indigo-100 hover:bg-white"
-                }`}
+              onClick={() => setView("comparativa")}
+              className={`relative flex-1 py-1.5 text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-colors z-10 flex items-center justify-center gap-1 ${
+                view === "comparativa" ? "text-indigo-600" : "text-gray-400 opacity-60 hover:opacity-100"
+              }`}
             >
-              {view === "admin" ? "Dashboard" : "Cargar +"}
+              <span className="text-xs">📈</span>
+              <span className="hidden sm:inline">Analítica</span>
+            </button>
+            <button
+              onClick={() => setView("admin")}
+              className={`relative flex-1 py-1.5 text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-colors z-10 flex items-center justify-center gap-1 ${
+                view === "admin" ? "text-indigo-600" : "text-gray-400 opacity-60 hover:opacity-100"
+              }`}
+            >
+              <span className="text-xs">✍️</span>
+              <span className="hidden sm:inline">Reportar</span>
             </button>
           </div>
         </div>
@@ -45,7 +63,7 @@ export default function Home() {
         )}
 
         {view === "admin" && (
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
+          <div className="animate-in fade-in duration-300">
             <RegistroForm />
           </div>
         )}
@@ -56,17 +74,7 @@ export default function Home() {
 
       </div>
 
-      {/* Mobile Nav */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 flex justify-around py-4 md:hidden z-20 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
-        <button onClick={() => setView("comparativa")} className={`flex flex-col items-center gap-1 transition-all ${view === "comparativa" ? "text-indigo-600 scale-110" : "text-gray-400 opacity-60 hover:opacity-100"}`}>
-          <div className={`w-8 h-8 rounded-xl border-2 transition-colors flex items-center justify-center text-lg ${view === "comparativa" ? "border-indigo-600 bg-indigo-50 shadow-sm" : "border-gray-300"}`}>📊</div>
-          <span className="text-[10px] font-black uppercase tracking-tighter">Comparativa</span>
-        </button>
-        <button onClick={() => setView("admin")} className={`flex flex-col items-center gap-1 transition-all ${view === "admin" ? "text-indigo-600 scale-110" : "text-gray-400 opacity-60 hover:opacity-100"}`}>
-          <div className={`w-8 h-8 rounded-full border-2 transition-colors flex items-center justify-center font-black text-lg ${view === "admin" ? "border-indigo-600 bg-indigo-50 shadow-sm" : "border-gray-300"}`}>+</div>
-          <span className="text-[10px] font-black uppercase tracking-tighter">Reportar</span>
-        </button>
-      </nav>
+
     </main>
   );
 }

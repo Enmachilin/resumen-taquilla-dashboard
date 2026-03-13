@@ -148,10 +148,8 @@ export default function RegistroForm() {
 
   // ─── animation classes ───
   const slideClass = animating
-    ? direction === "forward"
-      ? "opacity-0 translate-x-8"
-      : "opacity-0 -translate-x-8"
-    : "opacity-100 translate-x-0";
+    ? "opacity-0"
+    : "opacity-100 transition-opacity duration-200";
 
   // ─── SAVED screen ───
   if (saved) return (
@@ -270,14 +268,16 @@ export default function RegistroForm() {
               </div>
             </div>
 
-            <div className="pt-4 pb-6 shrink-0">
-              <button
-                onClick={() => goTo(2)}
-                disabled={!step1Valid}
-                className="w-full bg-indigo-600 disabled:bg-gray-200 disabled:text-gray-400 text-white font-black py-4 rounded-2xl text-sm uppercase tracking-widest shadow-lg shadow-indigo-100 active:scale-95 transition-all"
-              >
-                Continuar →
-              </button>
+            <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-white via-white to-transparent px-6 pb-[10px] pt-6 z-40">
+              <div className="max-w-md mx-auto">
+                <button
+                  onClick={() => goTo(2)}
+                  disabled={!step1Valid}
+                  className="w-full bg-indigo-600 disabled:bg-gray-200 disabled:text-gray-400 text-white font-black py-4 rounded-2xl text-sm uppercase tracking-widest shadow-xl shadow-indigo-100 active:scale-95 transition-all"
+                >
+                  Continuar →
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -344,17 +344,19 @@ export default function RegistroForm() {
               </div>
             </div>
 
-            <div className="pt-4 pb-6 shrink-0 flex gap-3">
-              <button onClick={() => goTo(1)} className="flex-1 bg-gray-100 text-gray-600 font-black py-4 rounded-2xl text-sm uppercase tracking-widest active:scale-95 transition-all">
-                ← Atrás
-              </button>
-              <button
-                onClick={() => goTo(3)}
-                disabled={!step2Valid}
-                className="flex-[2] bg-indigo-600 disabled:bg-gray-200 disabled:text-gray-400 text-white font-black py-4 rounded-2xl text-sm uppercase tracking-widest shadow-lg shadow-indigo-100 active:scale-95 transition-all"
-              >
-                Continuar →
-              </button>
+            <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-white via-white to-transparent px-6 pb-[10px] pt-6 z-40">
+              <div className="max-w-md mx-auto flex gap-3">
+                <button onClick={() => goTo(1)} className="flex-1 bg-gray-100 text-gray-600 font-black py-4 rounded-2xl text-sm uppercase tracking-widest active:scale-95 transition-all">
+                  ← Atrás
+                </button>
+                <button
+                  onClick={() => goTo(3)}
+                  disabled={!step2Valid}
+                  className="flex-[2] bg-indigo-600 disabled:bg-gray-200 disabled:text-gray-400 text-white font-black py-4 rounded-2xl text-sm uppercase tracking-widest shadow-xl shadow-indigo-100 active:scale-95 transition-all"
+                >
+                  Continuar →
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -442,17 +444,19 @@ export default function RegistroForm() {
               </div>
             </div>
 
-            <div className="pt-4 pb-6 shrink-0 flex gap-3">
-              <button onClick={() => goTo(2)} className="flex-1 bg-gray-100 text-gray-600 font-black py-4 rounded-2xl text-sm uppercase tracking-widest active:scale-95 transition-all">
-                ← Atrás
-              </button>
-              <button
-                onClick={() => goTo(4)}
-                disabled={!step3Valid}
-                className="flex-[2] bg-indigo-600 disabled:bg-gray-200 disabled:text-gray-400 text-white font-black py-4 rounded-2xl text-sm uppercase tracking-widest shadow-lg shadow-indigo-100 active:scale-95 transition-all"
-              >
-                Revisar →
-              </button>
+            <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-white via-white to-transparent px-6 pb-[10px] pt-6 z-40">
+              <div className="max-w-md mx-auto flex gap-3">
+                <button onClick={() => goTo(2)} className="flex-1 bg-gray-100 text-gray-600 font-black py-4 rounded-2xl text-sm uppercase tracking-widest active:scale-95 transition-all">
+                  ← Atrás
+                </button>
+                <button
+                  onClick={() => goTo(4)}
+                  disabled={!step3Valid}
+                  className="flex-[2] bg-indigo-600 disabled:bg-gray-200 disabled:text-gray-400 text-white font-black py-4 rounded-2xl text-sm uppercase tracking-widest shadow-xl shadow-indigo-100 active:scale-95 transition-all"
+                >
+                  Revisar →
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -502,19 +506,21 @@ export default function RegistroForm() {
               )}
             </div>
 
-            <div className="pt-4 pb-6 shrink-0 flex gap-3">
-              <button onClick={() => goTo(3)} className="flex-1 bg-gray-100 text-gray-600 font-black py-4 rounded-2xl text-sm uppercase tracking-widest active:scale-95 transition-all">
-                ← Atrás
-              </button>
-              <button
-                onClick={handleSubmit}
-                disabled={loading}
-                className={`flex-[2] font-black py-4 rounded-2xl text-sm uppercase tracking-widest shadow-lg active:scale-95 transition-all text-white ${
-                  existingRegistro ? "bg-amber-600 shadow-amber-100" : "bg-indigo-600 shadow-indigo-100"
-                } disabled:opacity-60`}
-              >
-                {loading ? "Guardando..." : "Guardar jornada"}
-              </button>
+            <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-white via-white to-transparent px-6 pb-[10px] pt-6 z-40">
+              <div className="max-w-md mx-auto flex gap-3">
+                <button onClick={() => goTo(3)} className="flex-1 bg-gray-100 text-gray-600 font-black py-4 rounded-2xl text-sm uppercase tracking-widest active:scale-95 transition-all">
+                  ← Atrás
+                </button>
+                <button
+                  onClick={handleSubmit}
+                  disabled={loading}
+                  className={`flex-[2] font-black py-4 rounded-2xl text-sm uppercase tracking-widest shadow-xl active:scale-95 transition-all text-white ${
+                    existingRegistro ? "bg-amber-600 shadow-amber-100" : "bg-indigo-600 shadow-indigo-100"
+                  } disabled:opacity-60`}
+                >
+                  {loading ? "Guardando..." : "Guardar jornada"}
+                </button>
+              </div>
             </div>
           </div>
         )}
