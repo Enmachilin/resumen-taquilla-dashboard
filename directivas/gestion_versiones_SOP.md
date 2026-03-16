@@ -16,6 +16,8 @@ Mantener el repositorio de GitHub actualizado con los últimos cambios de códig
 
 ## Restricciones y Casos Borde
 - **Archivos Sensibles:** Nunca añadir archivos `.env` o credenciales. Verificar `.gitignore`.
+- **Error "10K Changes" en VS Code:** Si Git detecta miles de archivos (especialmente en Windows), se debe a que `node_modules` o carpetas de `build` no están siendo ignoradas correctamente. 
+  - *Solución:* Usar en `.gitignore` nombres de carpeta directos (ej: `node_modules/`) sin el slash inicial `/` para asegurar compatibilidad en Windows.
 - **Conflictos:** Si hay cambios en el remoto, hacer `git pull --rebase` antes de empujar.
 - **Directivas Externas:** Si las directivas están fuera del repo, el commit solo del código dejaría la "memoria" obsoleta en GitHub. Recomendación: Mantener `directivas/` dentro del repo.
 
