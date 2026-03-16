@@ -36,9 +36,23 @@ export default function ResumenCard({ actual, anterior }: ResumenCardProps) {
     diferencia = ((actual.tickets / anterior.tickets) - 1) * 100;
     
     if (diferencia > 0) {
-      trendIndicator = <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded-full font-bold ml-2">↑ MEJOR</span>;
+      trendIndicator = (
+        <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded-full font-black ml-2 flex items-center gap-1">
+          <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={4}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
+          </svg>
+          MEJOR
+        </span>
+      );
     } else if (diferencia < 0) {
-      trendIndicator = <span className="text-[10px] bg-black/20 px-2 py-0.5 rounded-full font-bold ml-2">↓ MENOR</span>;
+      trendIndicator = (
+        <span className="text-[10px] bg-black/20 px-2 py-0.5 rounded-full font-black ml-2 flex items-center gap-1">
+          <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={4}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+          MENOR
+        </span>
+      );
     }
   }
 
@@ -71,7 +85,17 @@ export default function ResumenCard({ actual, anterior }: ResumenCardProps) {
               <span className="text-sm font-black">
                 {diferencia > 0 ? '+' : ''}{diferencia.toFixed(0)}%
               </span>
-              <span className="text-[10px]">{diferencia > 0 ? '↑' : '↓'}</span>
+              <span className="text-[10px]">
+                {diferencia > 0 ? (
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={4}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
+                  </svg>
+                ) : (
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={4}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                )}
+              </span>
             </div>
           </div>
         )}

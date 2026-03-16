@@ -1,0 +1,81 @@
+[log] xml(load) at C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\AndroidManifest.xml
+[log] xml(load) Found root namespaces in XML file: http://schemas.android.com/apk/res/android
+Generating assets for android
+CREATE android adaptive-icon C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\mipmap-ldpi\ic_launcher_foreground.png (14.41 KB)
+CREATE android adaptive-icon C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\mipmap-anydpi-v26\ic_launcher.xml
+CREATE android adaptive-icon C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\mipmap-anydpi-v26\ic_launcher_round.xml
+CREATE android adaptive-icon C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\mipmap-mdpi\ic_launcher_foreground.png (23.58 KB)
+CREATE android adaptive-icon C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\mipmap-anydpi-v26\ic_launcher.xml
+CREATE android adaptive-icon C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\mipmap-anydpi-v26\ic_launcher_round.xml
+CREATE android adaptive-icon C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\mipmap-hdpi\ic_launcher_foreground.png (47.67 KB)
+CREATE android adaptive-icon C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\mipmap-anydpi-v26\ic_launcher.xml
+CREATE android adaptive-icon C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\mipmap-anydpi-v26\ic_launcher_round.xml
+CREATE android adaptive-icon C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\mipmap-xhdpi\ic_launcher_foreground.png (78.65 KB)
+CREATE android adaptive-icon C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\mipmap-anydpi-v26\ic_launcher.xml
+CREATE android adaptive-icon C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\mipmap-anydpi-v26\ic_launcher_round.xml
+CREATE android adaptive-icon C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\mipmap-xxhdpi\ic_launcher_foreground.png (162.68 KB)
+CREATE android adaptive-icon C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\mipmap-anydpi-v26\ic_launcher.xml
+CREATE android adaptive-icon C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\mipmap-anydpi-v26\ic_launcher_round.xml
+CREATE android adaptive-icon C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\mipmap-xxxhdpi\ic_launcher_foreground.png (274.36 KB)
+CREATE android adaptive-icon C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\mipmap-anydpi-v26\ic_launcher.xml
+CREATE android adaptive-icon C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\mipmap-anydpi-v26\ic_launcher_round.xml
+CREATE android adaptive-icon C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\mipmap-ldpi\ic_launcher_background.png (277 B)
+CREATE android adaptive-icon C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\mipmap-anydpi-v26\ic_launcher.xml
+CREATE android adaptive-icon C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\mipmap-anydpi-v26\ic_launcher_round.xml
+CREATE android adaptive-icon C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\mipmap-mdpi\ic_launcher_background.png (350 B)
+CREATE android adaptive-icon C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\mipmap-anydpi-v26\ic_launcher.xml
+CREATE android adaptive-icon C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\mipmap-anydpi-v26\ic_launcher_round.xml
+CREATE android adaptive-icon C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\mipmap-hdpi\ic_launcher_background.png (531 B)
+CREATE android adaptive-icon C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\mipmap-anydpi-v26\ic_launcher.xml
+CREATE android adaptive-icon C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\mipmap-anydpi-v26\ic_launcher_round.xml
+CREATE android adaptive-icon C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\mipmap-xhdpi\ic_launcher_background.png (697 B)
+CREATE android adaptive-icon C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\mipmap-anydpi-v26\ic_launcher.xml
+CREATE android adaptive-icon C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\mipmap-anydpi-v26\ic_launcher_round.xml
+CREATE android adaptive-icon C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\mipmap-xxhdpi\ic_launcher_background.png (1.02 KB)
+CREATE android adaptive-icon C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\mipmap-anydpi-v26\ic_launcher.xml
+CREATE android adaptive-icon C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\mipmap-anydpi-v26\ic_launcher_round.xml
+CREATE android adaptive-icon C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\mipmap-xxxhdpi\ic_launcher_background.png (1.69 KB)
+CREATE android adaptive-icon C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\mipmap-anydpi-v26\ic_launcher.xml
+CREATE android adaptive-icon C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\mipmap-anydpi-v26\ic_launcher_round.xml
+CREATE android icon C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\mipmap-ldpi\ic_launcher.png (1.42 KB)
+CREATE android icon C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\mipmap-mdpi\ic_launcher.png (3.06 KB)
+CREATE android icon C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\mipmap-hdpi\ic_launcher.png (8.04 KB)
+CREATE android icon C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\mipmap-xhdpi\ic_launcher.png (14.81 KB)
+CREATE android icon C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\mipmap-xxhdpi\ic_launcher.png (33.3 KB)
+CREATE android icon C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\mipmap-xxxhdpi\ic_launcher.png (57.8 KB)
+CREATE android icon C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\mipmap-ldpi\ic_launcher_round.png (3.51 KB)
+CREATE android icon C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\mipmap-mdpi\ic_launcher_round.png (5.75 KB)
+CREATE android icon C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\mipmap-hdpi\ic_launcher_round.png (11.45 KB)
+CREATE android icon C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\mipmap-xhdpi\ic_launcher_round.png (18.82 KB)
+CREATE android icon C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\mipmap-xxhdpi\ic_launcher_round.png (38.11 KB)
+CREATE android icon C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\mipmap-xxxhdpi\ic_launcher_round.png (63.34 KB)
+CREATE android splash C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\drawable\splash.png (12.21 KB)
+CREATE android splash C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\drawable-land-ldpi\splash.png (11.1 KB)
+CREATE android splash C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\drawable-land-mdpi\splash.png (21.93 KB)
+CREATE android splash C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\drawable-land-hdpi\splash.png (53.35 KB)
+CREATE android splash C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\drawable-land-xhdpi\splash.png (121.65 KB)
+CREATE android splash C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\drawable-land-xxhdpi\splash.png (182.08 KB)
+CREATE android splash C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\drawable-land-xxxhdpi\splash.png (251.86 KB)
+CREATE android splash C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\drawable-port-ldpi\splash.png (7.34 KB)
+CREATE android splash C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\drawable-port-mdpi\splash.png (12.21 KB)
+CREATE android splash C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\drawable-port-hdpi\splash.png (24.71 KB)
+CREATE android splash C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\drawable-port-xhdpi\splash.png (49.68 KB)
+CREATE android splash C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\drawable-port-xxhdpi\splash.png (78.85 KB)
+CREATE android splash C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\drawable-port-xxxhdpi\splash.png (128.95 KB)
+CREATE android splash-dark C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\drawable-night\splash.png (12.05 KB)
+CREATE android splash-dark C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\drawable-land-night-ldpi\splash.png (12.05 KB)
+CREATE android splash-dark C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\drawable-land-night-mdpi\splash.png (24.35 KB)
+CREATE android splash-dark C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\drawable-land-night-hdpi\splash.png (59.51 KB)
+CREATE android splash-dark C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\drawable-land-night-xhdpi\splash.png (135.02 KB)
+CREATE android splash-dark C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\drawable-land-night-xxhdpi\splash.png (204.38 KB)
+CREATE android splash-dark C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\drawable-land-night-xxxhdpi\splash.png (287.71 KB)
+CREATE android splash-dark C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\drawable-port-night-ldpi\splash.png (8.49 KB)
+CREATE android splash-dark C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\drawable-port-night-mdpi\splash.png (14.31 KB)
+CREATE android splash-dark C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\drawable-port-night-hdpi\splash.png (31.39 KB)
+CREATE android splash-dark C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\drawable-port-night-xhdpi\splash.png (65.65 KB)
+CREATE android splash-dark C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\drawable-port-night-xxhdpi\splash.png (101.88 KB)
+CREATE android splash-dark C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\src\main\res\drawable-port-night-xxxhdpi\splash.png (165.86 KB)
+
+
+Totals:
+android: 74 generated, 2.87 MB total

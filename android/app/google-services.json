@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "1839638324",
+    "project_id": "resumen-de-taquilla",
+    "storage_bucket": "resumen-de-taquilla.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1839638324:android:4fc5381c5ed3b4d279e761",
+        "android_client_info": {
+          "package_name": "com.resumentaquilla.analitica"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyARp2Ss77wt-VRfTtvEILVfuWpc-xCwzlA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1839638324:android:03c23a106eb97f8a79e761",
+        "android_client_info": {
+          "package_name": "com.resumentaquilla.registrar"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyARp2Ss77wt-VRfTtvEILVfuWpc-xCwzlA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

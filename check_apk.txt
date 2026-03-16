@@ -1,0 +1,2 @@
+C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\build\outputs\apk\debug\app-debug.apk
+C:\Users\enmas\OneDrive\Desktop\Resumen de taquilla\resumen-taquilla\android\app\build\outputs\apk\androidTest\debug\app-debug-androidTest.apk

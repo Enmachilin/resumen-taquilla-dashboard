@@ -5,10 +5,18 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:registrar": "set NEXT_PUBLIC_APP_MODE=registrar && next build",
+    "build:analitica": "set NEXT_PUBLIC_APP_MODE=analitica && next build",
+    "app:sync": "npx cap sync android",
+    "app:open": "npx cap open android",
     "start": "next start",
     "lint": "eslint"
   },
   "dependencies": {
+    "@capacitor/android": "^8.2.0",
+    "@capacitor/cli": "^8.2.0",
+    "@capacitor/core": "^8.2.0",
+    "@capacitor/push-notifications": "^8.0.2",
     "firebase": "^12.10.0",
     "next": "16.1.6",
     "react": "19.2.3",
@@ -16,6 +24,7 @@
     "recharts": "^3.8.0"
   },
   "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Resumen de Taquilla",
+  title: "DataPark",
   description: "Dashboard comparativo de ingresos para parques itinerantes",
 };
 

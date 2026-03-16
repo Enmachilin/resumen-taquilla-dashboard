@@ -2,28 +2,56 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Locacion, RegistroDiario, RegistroStatus } from "@/types";
-import { registroService, locacionService } from "@/services/firestore";
+import { registroService } from "@/services/firestore";
+import { db } from "@/lib/firebase";
+import { collection, query, orderBy, onSnapshot, doc } from "firebase/firestore";
 
-const STATUS_OPTIONS: { value: RegistroStatus; label: string; emoji: string; color: string; bg: string }[] = [
-  { value: "operativo", label: "Operativo",  emoji: "✅", color: "text-indigo-700", bg: "bg-indigo-50 border-indigo-200" },
-  { value: "lluvia",    label: "Lluvia",     emoji: "🌧️", color: "text-blue-700",   bg: "bg-blue-50 border-blue-200" },
-  { value: "otro",      label: "Otro...",    emoji: "⚠️", color: "text-orange-700", bg: "bg-orange-50 border-orange-200" },
+const StatusIcon = ({ value }: { value: RegistroStatus }) => {
+  switch (value) {
+    case 'operativo':
+      return <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
+    case 'lluvia':
+      return <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" /><path strokeLinecap="round" strokeLinejoin="round" d="M12 19v1m2-1v1m-4-1v1m2-5l-1.5 2.5m3.5-2.5L14 16.5" /></svg>;
+    case 'otro':
+      return <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>;
+    default:
+      return null;
+  }
+};
+
+const STATUS_OPTIONS: { value: RegistroStatus; label: string; color: string; bg: string }[] = [
+  { value: "operativo", label: "Operativo", color: "text-indigo-700", bg: "bg-indigo-50 border-indigo-200" },
+  { value: "lluvia",    label: "Lluvia",    color: "text-blue-700",   bg: "bg-blue-50 border-blue-200" },
+  { value: "otro",      label: "Otro...",   color: "text-orange-700", bg: "bg-orange-50 border-orange-200" },
 ];
 
 const TOTAL_STEPS = 4;
 
 export default function RegistroForm() {
-  const [locaciones, setLocaciones] = useState<Locacion[]>([]);
+  // Cargar caché inicial si existe para que sea instantáneo
+  const [locaciones, setLocaciones] = useState<Locacion[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('cached_locaciones');
+      return saved ? JSON.parse(saved) : [];
+    }
+    return [];
+  });
+  
   const [loading, setLoading] = useState(false);
   const [fetchingTasa, setFetchingTasa] = useState(false);
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState<string | React.ReactNode>("");
   const [step, setStep] = useState(1);
   const [direction, setDirection] = useState<"forward" | "backward">("forward");
   const [animating, setAnimating] = useState(false);
-  const [isAddingLocacion, setIsAddingLocacion] = useState(false);
-  const [newLocacionName, setNewLocacionName] = useState("");
   const [existingRegistro, setExistingRegistro] = useState<RegistroDiario | null>(null);
   const [saved, setSaved] = useState(false);
+
+  // Inicializar locacionId de la caché si existe
+  useEffect(() => {
+    if (locaciones.length > 0 && !formData.locacionId) {
+      setFormData(prev => ({ ...prev, locacionId: locaciones[0].id }));
+    }
+  }, []);
 
   const [formData, setFormData] = useState({
     fecha: new Date().toISOString().split("T")[0],
@@ -37,28 +65,38 @@ export default function RegistroForm() {
   });
 
   useEffect(() => {
-    fetchLocaciones();
+    // 1. Escuchar Locaciones en tiempo real
+    const qLocs = query(collection(db, "puntos_venta"), orderBy("nombre"));
+    const unsubLocs = onSnapshot(qLocs, (snapshot) => {
+      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Locacion));
+      setLocaciones(data);
+      localStorage.setItem('cached_locaciones', JSON.stringify(data));
+      
+      if (data.length > 0 && !formData.locacionId) {
+        setFormData(prev => ({ ...prev, locacionId: data[0].id }));
+      }
+    });
+
     fetchTasaBCV();
+
+    return () => unsubLocs();
   }, []);
 
   useEffect(() => {
-    if (formData.fecha && formData.locacionId) checkExisting();
-    else setExistingRegistro(null);
-  }, [formData.fecha, formData.locacionId]);
-
-  async function checkExisting() {
-    const id = `${formData.fecha}_${formData.locacionId}`;
-    const existing = await registroService.getRegistro(id);
-    setExistingRegistro(existing);
-  }
-
-  async function fetchLocaciones() {
-    const data = await locacionService.getLocaciones();
-    setLocaciones(data);
-    if (data.length > 0 && !formData.locacionId) {
-      setFormData(prev => ({ ...prev, locacionId: data[0].id }));
+    if (formData.fecha && formData.locacionId) {
+      const id = `${formData.fecha}_${formData.locacionId}`;
+      const unsubReg = onSnapshot(doc(db, "registros_diarios", id), (docSnap) => {
+        if (docSnap.exists()) {
+          setExistingRegistro(docSnap.data() as RegistroDiario);
+        } else {
+          setExistingRegistro(null);
+        }
+      });
+      return () => unsubReg();
+    } else {
+      setExistingRegistro(null);
     }
-  }
+  }, [formData.fecha, formData.locacionId]);
 
   async function fetchTasaBCV() {
     setFetchingTasa(true);
@@ -72,19 +110,7 @@ export default function RegistroForm() {
     finally { setFetchingTasa(false); }
   }
 
-  async function handleAddLocacion() {
-    if (!newLocacionName.trim()) return;
-    setLoading(true);
-    try {
-      const id = newLocacionName.toLowerCase().trim().replace(/\s+/g, '-');
-      await locacionService.addLocacion({ id, nombre: newLocacionName.trim() });
-      await fetchLocaciones();
-      setFormData(prev => ({ ...prev, locacionId: id }));
-      setNewLocacionName("");
-      setIsAddingLocacion(false);
-    } catch {}
-    finally { setLoading(false); }
-  }
+
 
   async function handleSubmit() {
     setLoading(true);
@@ -104,7 +130,14 @@ export default function RegistroForm() {
       });
       setSaved(true);
     } catch {
-      setMessage("❌ Error al guardar el registro");
+      setMessage(
+        <div className="flex items-center gap-2 text-red-600 font-black">
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          Error al guardar el registro
+        </div>
+      );
     } finally {
       setLoading(false);
     }
@@ -153,9 +186,13 @@ export default function RegistroForm() {
 
   // ─── SAVED screen ───
   if (saved) return (
-    <div className="flex flex-col items-center justify-center h-[calc(100vh-140px)] gap-6 animate-in fade-in zoom-in duration-500">
-      <div className="w-24 h-24 bg-indigo-50 rounded-full flex items-center justify-center text-5xl shadow-lg shadow-indigo-100">✅</div>
-      <div className="text-center">
+    <div className="flex flex-col items-center justify-center min-h-[70vh] gap-6 animate-in fade-in zoom-in duration-500 text-center">
+      <div className="w-24 h-24 bg-indigo-50 rounded-full flex items-center justify-center shadow-lg shadow-indigo-100">
+        <svg className="w-12 h-12 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+        </svg>
+      </div>
+      <div>
         <p className="text-2xl font-black text-indigo-900">
           {existingRegistro ? "Sobreescrito" : "Guardado"}
         </p>
@@ -171,10 +208,10 @@ export default function RegistroForm() {
   );
 
   return (
-    <div className="flex flex-col h-[calc(100dvh-120px)] max-w-md mx-auto px-6 select-none relative overflow-x-hidden">
+    <div className="flex flex-col h-full max-w-md mx-auto px-6 select-none relative overflow-x-hidden">
 
       {/* ── Progress bar ── */}
-      <div className="flex gap-1.5 px-1 mb-6 mt-2 shrink-0">
+      <div className="flex gap-1.5 px-1 mb-4 mt-1 shrink-0">
         {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
           <div
             key={i}
@@ -191,7 +228,7 @@ export default function RegistroForm() {
         {/* ══ STEP 1: Fecha + Plaza ══ */}
         {step === 1 && (
           <div className="flex flex-col flex-1 min-h-0">
-            <div className="flex-1 overflow-y-auto pt-2 pb-6 space-y-8 scrollbar-hide">
+            <div className="flex-1 overflow-y-auto pt-1 pb-4 space-y-6 scrollbar-hide">
               <div className="text-center">
                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400 mb-1">Paso 1 de 4</p>
                 <h2 className="text-2xl font-black text-gray-900 leading-tight">Configuración inicial</h2>
@@ -220,8 +257,14 @@ export default function RegistroForm() {
                         onChange={e => setFormData({ ...formData, locacionId: e.target.value })}
                         className="w-full bg-white border-2 border-gray-100 rounded-3xl px-5 py-4 font-black text-gray-700 focus:outline-none focus:border-indigo-600 transition-all appearance-none shadow-sm group-hover:shadow-md"
                       >
-                        <option value="">Seleccionar plaza...</option>
-                        {locaciones.map(l => <option key={l.id} value={l.id}>{l.nombre}</option>)}
+                        {locaciones.length === 0 ? (
+                          <option value="">Cargando plazas...</option>
+                        ) : (
+                          <>
+                            <option value="">Seleccionar plaza...</option>
+                            {locaciones.map(l => <option key={l.id} value={l.id}>{l.nombre}</option>)}
+                          </>
+                        )}
                       </select>
                       <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-indigo-600">
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
@@ -229,46 +272,24 @@ export default function RegistroForm() {
                         </svg>
                       </div>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => setIsAddingLocacion(v => !v)}
-                      className={`w-14 h-14 rounded-2xl border-2 font-black text-xl transition-all flex items-center justify-center shrink-0 ${
-                        isAddingLocacion ? "bg-red-50 border-red-200 text-red-500 rotate-45" : "bg-gray-50 border-gray-100 text-gray-500"
-                      }`}
-                    >+</button>
                   </div>
-
-                  {isAddingLocacion && (
-                    <div className="mt-2 flex gap-2 animate-in fade-in slide-in-from-top-2 duration-200">
-                      <input
-                        autoFocus
-                        type="text"
-                        placeholder="Nombre de la plaza..."
-                        value={newLocacionName}
-                        onChange={e => setNewLocacionName(e.target.value)}
-                        onKeyDown={e => e.key === 'Enter' && handleAddLocacion()}
-                        className="flex-1 bg-indigo-50 border-2 border-indigo-100 rounded-2xl px-4 py-3 text-sm font-bold text-gray-800 outline-none focus:border-indigo-400"
-                      />
-                      <button
-                        type="button"
-                        onClick={handleAddLocacion}
-                        disabled={!newLocacionName.trim()}
-                        className="bg-indigo-600 text-white font-black text-xs px-4 rounded-xl disabled:opacity-40 transition-opacity"
-                      >OK</button>
-                    </div>
-                  )}
                 </div>
 
                 {existingRegistro && (
-                  <div className="bg-amber-50 border-2 border-amber-100 rounded-3xl p-4 animate-in zoom-in duration-300">
-                    <p className="text-[10px] font-black text-amber-700 uppercase tracking-widest leading-none mb-1">⚠️ Existe registro previo</p>
-                    <p className="text-[11px] text-amber-600 font-medium">Al guardar sobreescribirás los datos de {locNombre}.</p>
+                  <div className="bg-amber-50 border-2 border-amber-100 rounded-3xl p-4 flex items-start gap-3 animate-in zoom-in duration-300">
+                    <svg className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <div>
+                      <p className="text-[10px] font-black text-amber-700 uppercase tracking-widest leading-none mb-1 text-left">Existe registro previo</p>
+                      <p className="text-[11px] text-amber-600 font-medium text-left">Al guardar sobreescribirás los datos de {locNombre}.</p>
+                    </div>
                   </div>
                 )}
               </div>
             </div>
 
-            <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-white via-white to-transparent px-6 pb-[10px] pt-6 z-40">
+            <div className="fixed bottom-0 left-0 right-0 bg-white px-6 pb-2 pt-2 z-40 border-t border-gray-50">
               <div className="max-w-md mx-auto">
                 <button
                   onClick={() => goTo(2)}
@@ -285,7 +306,7 @@ export default function RegistroForm() {
         {/* ══ STEP 2: Reporte del día ══ */}
         {step === 2 && (
           <div className="flex flex-col flex-1 min-h-0">
-            <div className="flex-1 overflow-y-auto pt-2 pb-6 space-y-6 scrollbar-hide">
+            <div className="flex-1 overflow-y-auto pt-1 pb-20 space-y-4 scrollbar-hide">
               <div className="text-center">
                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400 mb-1">Paso 2 de 4</p>
                 <h2 className="text-2xl font-black text-gray-900 leading-tight">Reporte del día</h2>
@@ -311,7 +332,9 @@ export default function RegistroForm() {
                           : "bg-white border-gray-100 opacity-60 hover:opacity-100"
                       }`}
                     >
-                      <span className="text-2xl flex-shrink-0">{opt.emoji}</span>
+                      <span className={`flex-shrink-0 ${isSelected ? opt.color : "text-gray-400"}`}>
+                        <StatusIcon value={opt.value} />
+                      </span>
                       
                       <span className={`font-black text-lg flex-shrink-0 ${isSelected ? opt.color : "text-gray-600"}`}>
                         {opt.label}
@@ -344,7 +367,7 @@ export default function RegistroForm() {
               </div>
             </div>
 
-            <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-white via-white to-transparent px-6 pb-[10px] pt-6 z-40">
+            <div className="fixed bottom-0 left-0 right-0 bg-white px-6 pb-2 pt-2 z-40 border-t border-gray-50">
               <div className="max-w-md mx-auto flex gap-3">
                 <button onClick={() => goTo(1)} className="flex-1 bg-gray-100 text-gray-600 font-black py-4 rounded-2xl text-sm uppercase tracking-widest active:scale-95 transition-all">
                   ← Atrás
@@ -364,14 +387,17 @@ export default function RegistroForm() {
         {/* ══ STEP 3: Datos de la jornada ══ */}
         {step === 3 && (
           <div className="flex flex-col flex-1 min-h-0">
-            <div className="flex-1 overflow-y-auto pt-2 pb-6 space-y-6 scrollbar-hide">
+            <div className="flex-1 overflow-y-auto pt-1 pb-32 space-y-4 scrollbar-hide">
               <div className="text-center">
                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400 mb-1">Paso 3 de 4</p>
                 <h2 className="text-2xl font-black text-gray-900 leading-tight">Datos de la jornada</h2>
-                <p className="text-sm text-gray-400 font-medium mt-1">{statusInfo.emoji} {statusInfo.label} · {locNombre}</p>
+                <div className="flex items-center justify-center gap-2 mt-1">
+                  <span className={statusInfo.color}><StatusIcon value={formData.status} /></span>
+                  <p className="text-sm text-gray-400 font-medium">{statusInfo.label} · {locNombre}</p>
+                </div>
               </div>
 
-              <div className="flex flex-col gap-6">
+              <div className="flex flex-col gap-4">
                 {/* Tickets */}
                 <div className="group transition-all">
                   <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Tickets vendidos</label>
@@ -381,11 +407,11 @@ export default function RegistroForm() {
                     placeholder="0"
                     value={formData.tickets || ""}
                     onChange={e => setFormData({ ...formData, tickets: Number(e.target.value.replace(/\D/g, "")) })}
-                    className="w-full bg-white border-2 border-gray-100 rounded-3xl px-5 py-5 text-4xl font-black text-gray-900 focus:outline-none focus:border-indigo-600 transition-all text-center tabular-nums shadow-sm"
+                    className="w-full bg-white border-2 border-gray-100 rounded-3xl px-5 py-4 text-4xl font-black text-gray-900 focus:outline-none focus:border-indigo-600 transition-all text-center tabular-nums shadow-sm"
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3">
                   {/* Precio Ticket */}
                   <div>
                     <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Precio ticket</label>
@@ -400,9 +426,9 @@ export default function RegistroForm() {
                           if (parts.length > 2) val = parts[0] + "." + parts.slice(1).join("");
                           setFormData({ ...formData, precioTicket: val });
                         }}
-                        className="w-full bg-white border-2 border-gray-100 rounded-3xl pl-5 pr-10 py-5 text-xl font-black text-gray-900 focus:outline-none focus:border-indigo-600 transition-all text-right tabular-nums shadow-sm"
+                        className="w-full bg-white border-2 border-gray-100 rounded-3xl pl-5 pr-8 py-4 text-xl font-black text-gray-900 focus:outline-none focus:border-indigo-600 transition-all text-right tabular-nums shadow-sm"
                       />
-                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-lg font-black text-gray-400">$</span>
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-lg font-black text-gray-400">$</span>
                     </div>
                   </div>
 
@@ -410,11 +436,23 @@ export default function RegistroForm() {
                   <div>
                     <div className="flex items-center justify-between mb-2 px-1">
                       <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Tasa BCV</label>
-                      <button type="button" onClick={fetchTasaBCV} className="text-[9px] font-black text-indigo-500 uppercase tracking-wide">
-                        {fetchingTasa ? "..." : "↻ Sync"}
+                      <button 
+                        type="button" 
+                        onClick={fetchTasaBCV} 
+                        disabled={fetchingTasa}
+                        className={`text-[9px] font-black uppercase tracking-wide flex items-center gap-1.5 px-2.5 py-1 rounded-full transition-all ${
+                          fetchingTasa 
+                            ? "bg-gray-100 text-gray-400" 
+                            : "bg-indigo-50 text-indigo-600 hover:bg-indigo-100 active:scale-95"
+                        }`}
+                      >
+                        <svg className={`w-3 h-3 ${fetchingTasa ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        {fetchingTasa ? "Sincronizando..." : "Sync"}
                       </button>
                     </div>
-                    <div className="bg-gray-50 border-2 border-gray-100 rounded-3xl px-5 py-5 text-xl font-black text-gray-700 text-right tabular-nums shadow-inner">
+                    <div className="bg-gray-50 border-2 border-gray-100 rounded-3xl px-5 py-4 text-xl font-black text-gray-700 text-right tabular-nums shadow-inner">
                       {formData.tasaDolar.toFixed(2)}
                     </div>
                   </div>
@@ -435,7 +473,9 @@ export default function RegistroForm() {
 
                 {formData.status !== "operativo" && formData.motivoInactividad && (
                   <div className="bg-amber-50 border-2 border-amber-100 rounded-3xl p-4 flex gap-3 items-center">
-                    <span className="text-xl">ℹ️</span>
+                    <svg className="w-5 h-5 text-amber-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
                     <p className="text-xs text-amber-800 font-bold leading-tight uppercase flex-1">
                       Reportando: {formData.motivoInactividad}
                     </p>
@@ -444,7 +484,7 @@ export default function RegistroForm() {
               </div>
             </div>
 
-            <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-white via-white to-transparent px-6 pb-[10px] pt-6 z-40">
+            <div className="fixed bottom-0 left-0 right-0 bg-white px-6 pb-2 pt-2 z-40 border-t border-gray-50">
               <div className="max-w-md mx-auto flex gap-3">
                 <button onClick={() => goTo(2)} className="flex-1 bg-gray-100 text-gray-600 font-black py-4 rounded-2xl text-sm uppercase tracking-widest active:scale-95 transition-all">
                   ← Atrás
@@ -464,7 +504,7 @@ export default function RegistroForm() {
         {/* ══ STEP 4: Confirmación ══ */}
         {step === 4 && (
           <div className="flex flex-col flex-1 min-h-0">
-            <div className="flex-1 overflow-y-auto pt-2 pb-6 space-y-6 scrollbar-hide text-center">
+            <div className="flex-1 overflow-y-auto pt-1 pb-4 space-y-4 scrollbar-hide text-center">
               <div>
                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400 mb-1">Paso 4 de 4</p>
                 <h2 className="text-2xl font-black text-gray-900 leading-tight">Confirmar jornada</h2>
@@ -473,8 +513,10 @@ export default function RegistroForm() {
 
               <div className="bg-white border-2 border-gray-100 rounded-[3rem] p-8 space-y-8 shadow-sm">
                 <div className="flex flex-col items-center gap-4">
-                  <div className="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center text-3xl shadow-inner">
-                    🎫
+                  <div className="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center text-indigo-600 shadow-inner">
+                    <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 012-2h10a2 2 0 012 2v14a2 2 0 01-2 2H7a2 2 0 01-2-2V5z" />
+                    </svg>
                   </div>
                   <div>
                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Total Tickets</p>
@@ -495,9 +537,11 @@ export default function RegistroForm() {
 
                 <div className="pt-4 border-t border-gray-50 flex items-center justify-between text-gray-400 text-[9px] font-black uppercase tracking-widest px-2">
                   <span>{locNombre}</span>
-                  <span className="flex items-center gap-1">
-                    {statusInfo.emoji} {statusInfo.label}
-                  </span>
+                  <span>{locNombre}</span>
+                  <div className="flex items-center gap-1.5 text-indigo-600">
+                    <StatusIcon value={formData.status} />
+                    <span className="text-gray-400 capitalize">{statusInfo.label}</span>
+                  </div>
                 </div>
               </div>
 
@@ -506,7 +550,7 @@ export default function RegistroForm() {
               )}
             </div>
 
-            <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-white via-white to-transparent px-6 pb-[10px] pt-6 z-40">
+            <div className="fixed bottom-0 left-0 right-0 bg-white px-6 pb-2 pt-2 z-40 border-t border-gray-50">
               <div className="max-w-md mx-auto flex gap-3">
                 <button onClick={() => goTo(3)} className="flex-1 bg-gray-100 text-gray-600 font-black py-4 rounded-2xl text-sm uppercase tracking-widest active:scale-95 transition-all">
                   ← Atrás

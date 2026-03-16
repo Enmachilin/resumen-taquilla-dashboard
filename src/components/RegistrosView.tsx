@@ -181,7 +181,11 @@ export default function RegistrosView() {
                 </div>
             ) : (
                 <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-200">
-                    <div className="text-5xl mb-4 grayscale opacity-20">📂</div>
+                    <div className="flex justify-center mb-6 opacity-20">
+                        <svg className="w-16 h-16 text-indigo-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                        </svg>
+                    </div>
                     <p className="text-gray-400 font-bold">Selecciona una plaza para ver su historial</p>
                     <p className="text-[10px] text-gray-300 uppercase tracking-widest mt-2">Consulta de registros diarios</p>
                 </div>

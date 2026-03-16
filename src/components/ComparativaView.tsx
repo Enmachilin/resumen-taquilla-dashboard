@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import {
     AreaChart,
     Area,
@@ -8,7 +8,8 @@ import {
     Tooltip,
     ResponsiveContainer
 } from "recharts";
-import { locacionService, registroService } from "@/services/firestore";
+import { db } from "@/lib/firebase";
+import { collection, query, orderBy, onSnapshot, where } from "firebase/firestore";
 import { Locacion, RegistroDiario } from "@/types";
 
 const MONTHS = [
@@ -19,7 +20,12 @@ const MONTHS = [
 // Colores modernos para diferentes años
 const YEAR_COLORS = ["#6366f1", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"];
 
-export default function ComparativaView() {
+interface ComparativaViewProps {
+    highlightedId?: string | null;
+    onClearHighlight?: () => void;
+}
+
+export default function ComparativaView({ highlightedId, onClearHighlight }: ComparativaViewProps) {
     const [locaciones, setLocaciones] = useState<Locacion[]>([]);
     const [activeLocacion, setActiveLocacion] = useState<string>("");
     const [registros, setRegistros] = useState<RegistroDiario[]>([]);
@@ -29,42 +35,95 @@ export default function ComparativaView() {
     const [selectedYear, setSelectedYear] = useState<string | null>(null);
     const [expandedMonth, setExpandedMonth] = useState<string | null>(null);
 
+    const highlightedRecordRef = useRef<HTMLDivElement>(null);
+
+    // Click fuera para limpiar highlight
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (highlightedId && highlightedRecordRef.current && !highlightedRecordRef.current.contains(e.target as Node)) {
+                onClearHighlight?.();
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, [highlightedId, onClearHighlight]);
+
     useEffect(() => {
         setIsMounted(true);
-        const loadLocaciones = async () => {
-            try {
-                const locs = await locacionService.getLocaciones();
-                setLocaciones(locs);
-                const savedLoc = localStorage.getItem("lastActiveLocacion");
+        // Escuchar locaciones en tiempo real
+        const q = query(collection(db, "puntos_venta"), orderBy("nombre"));
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const locs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Locacion));
+            setLocaciones(locs);
+            
+            const savedLoc = localStorage.getItem("lastActiveLocacion");
+            // Usar estado actual si ya hay uno seleccionado, o el guardado, o el primero
+            if (!activeLocacion) {
                 if (savedLoc && savedLoc !== "all") {
                     setActiveLocacion(savedLoc);
                 } else if (locs.length > 0) {
                     setActiveLocacion(locs[0].id);
                 }
-            } catch (error) {
-                console.error("Error cargando locaciones:", error);
             }
-        };
-        loadLocaciones();
-    }, []);
+        });
+        return () => unsubscribe();
+    }, [activeLocacion]);
 
     useEffect(() => {
         if (!isMounted || !activeLocacion) return;
 
-        const fetchDatos = async () => {
-            setLoading(true);
-            try {
-                const data = await registroService.getRegistrosByLocacion(activeLocacion);
-                setRegistros(data);
-            } catch (error) {
-                console.error("Error cargando registros para comparativa:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
+        setLoading(true);
+        // Escuchar registros de la plaza activa en tiempo real
+        const q = query(
+            collection(db, "registros_diarios"),
+            where("locacionId", "==", activeLocacion)
+        );
 
-        fetchDatos();
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as RegistroDiario)); // Ensure id is included
+            // Ordenar por fecha descendente
+            const sortedData = data.sort((a, b) => b.fecha.localeCompare(a.fecha));
+            setRegistros(sortedData);
+            setLoading(false);
+        }, (error) => {
+            console.error("Error escuchando registros:", error);
+            setLoading(false);
+        });
+
+        return () => unsubscribe();
     }, [activeLocacion, isMounted]);
+
+    // Efecto para manejar la navegación desde una notificación
+    useEffect(() => {
+        if (!highlightedId || !isMounted || locaciones.length === 0) return;
+
+        // Extraer locacionId, año, mes y día del ID del registro (formato: YYYY-MM-DD_locId_recordId)
+        const parts = highlightedId.split('_');
+        if (parts.length >= 3) {
+            const datePart = parts[0]; // YYYY-MM-DD
+            const locId = parts[1]; // locId
+            const [year, month] = datePart.split('-');
+
+            // 1. Cambiar la locación si es diferente
+            if (locId !== activeLocacion) {
+                setActiveLocacion(locId);
+                localStorage.setItem("lastActiveLocacion", locId);
+            }
+
+            // 2. Seleccionar el año
+            setSelectedYear(year);
+
+            // 3. Expandir el mes
+            const monthName = MONTHS[parseInt(month) - 1];
+            setExpandedMonth(`${year}-${monthName}`);
+
+            // Scroll to the highlighted record after render
+            const timer = setTimeout(() => {
+                highlightedRecordRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 500); // Give some time for the UI to render and expand
+            return () => clearTimeout(timer);
+        }
+    }, [highlightedId, isMounted, locaciones, activeLocacion]); // Add activeLocacion to dependencies to react to its change
 
     const { chartData } = useMemo(() => {
         if (!registros.length) return { chartData: [] };
@@ -101,6 +160,7 @@ export default function ComparativaView() {
             }
 
             const dayRecord = {
+                id: r.id, // Include id for highlighting
                 fecha: r.fecha,
                 tickets: r.tickets || 0,
                 dolares,
@@ -146,21 +206,23 @@ export default function ComparativaView() {
             const latestYear = chartData[chartData.length - 1].nameLabel;
             // Si el año seleccionado no existe en los datos, resetear al más reciente
             const exists = chartData.some((d: any) => d.nameLabel === selectedYear);
-            if (!exists) {
+            if (!exists && !highlightedId) { // Only auto-select if not navigating from highlight
                 setSelectedYear(latestYear);
             }
         } else {
             setSelectedYear(null);
         }
-    }, [chartData]);
+    }, [chartData, highlightedId]);
 
     // Sincronizar selectedBar con selectedYear
     useEffect(() => {
         if (!selectedYear || !chartData.length) { setSelectedBar(null); return; }
         const found = chartData.find((d: any) => d.nameLabel === selectedYear);
         setSelectedBar(found || null);
-        setExpandedMonth(null); // colapsar acordeones al cambiar año
-    }, [selectedYear, chartData]);
+        if (!highlightedId) { // Only collapse if not navigating from highlight
+            setExpandedMonth(null); 
+        }
+    }, [selectedYear, chartData, highlightedId]);
 
     const formatYAxis = (tickItem: number) => {
         if (tickItem >= 1000) {
@@ -179,18 +241,9 @@ export default function ComparativaView() {
                     <svg width="200" height="200" viewBox="0 0 24 24" fill="currentColor" className="text-indigo-900"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z" /></svg>
                 </div>
 
-                {/* Header Unificado: Título + Selector */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-4 relative z-10 border-b border-gray-50 pb-0">
-                    <div>
-                        <h2 className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.2em] mb-1">
-                            Análisis Interanual
-                        </h2>
-                        <h3 className="text-xl font-black text-gray-800 flex items-center gap-2">
-                            Rendimiento por Año
-                        </h3>
-                    </div>
-
-                    <div className="flex flex-col min-w-[220px]">
+                {/* Header Unificado: Selector de Plaza */}
+                <div className="flex flex-col md:flex-row md:items-center justify-center gap-4 mb-4 relative z-10 border-b border-gray-50 pb-4">
+                    <div className="flex flex-col w-full max-w-sm">
                         <label className="text-xs md:text-sm font-black uppercase text-gray-400 tracking-wider mb-2 text-center">
                             Seleccionar Plaza
                         </label>
@@ -199,6 +252,7 @@ export default function ComparativaView() {
                             onChange={(e) => {
                                 setActiveLocacion(e.target.value);
                                 localStorage.setItem("lastActiveLocacion", e.target.value);
+                                onClearHighlight?.(); // Clear highlight when changing location
                             }}
                             className="bg-gray-50 border-2 border-gray-100 outline-none p-4 px-6 rounded-xl text-lg md:text-xl font-black text-gray-800 text-center focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all cursor-pointer appearance-none shadow-sm"
                             style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236366f1'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 1rem center', backgroundSize: '1.5em' }}
@@ -217,7 +271,10 @@ export default function ComparativaView() {
                             {chartData.map((d: any) => (
                                 <button
                                     key={d.nameLabel}
-                                    onClick={() => setSelectedYear(d.nameLabel)}
+                                    onClick={() => {
+                                        setSelectedYear(d.nameLabel);
+                                        onClearHighlight?.(); // Clear highlight when changing year
+                                    }}
                                     className={`flex-shrink-0 px-5 py-2 rounded-full text-sm font-black tracking-wide transition-all duration-200 ${
                                         selectedYear === d.nameLabel
                                             ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200'
@@ -232,21 +289,24 @@ export default function ComparativaView() {
                 )}
 
                 {loading ? (
-                    <div className="flex flex-col items-center justify-center py-32 animate-pulse">
-                        <div className="h-10 w-10 border-4 border-indigo-100 border-t-indigo-500 rounded-full animate-spin mb-4"></div>
-                        <p className="text-gray-400 font-bold uppercase text-xs tracking-widest">Calculando datos históricos...</p>
+                    <div className="flex flex-col items-center justify-center py-32">
+                        <div className="relative">
+                            <div className="h-12 w-12 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin"></div>
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="w-1.5 h-1.5 bg-indigo-600 rounded-full animate-ping"></div>
+                            </div>
+                        </div>
+                        <p className="text-indigo-400 font-black uppercase text-[10px] tracking-[0.2em] mt-6 animate-pulse">
+                            Analizando registros...
+                        </p>
                     </div>
                 ) : chartData.length > 0 ? (
+
                     <>
                         {/* Tarjeta Persistente de Detalles (Simetría y Tamaño Máximo) */}
-                        {selectedBar && (
-                            <div className="mb-8 bg-indigo-50 border-2 border-indigo-100 rounded-3xl p-3 md:p-10 relative overflow-hidden animate-in fade-in slide-in-from-bottom-2">
-                                <h4 className="text-indigo-900 font-black uppercase tracking-widest text-sm md:text-lg mb-6 flex items-center justify-center gap-2 opacity-60">
-                                    <span className="bg-white p-1 rounded-md shadow-sm">📊</span>
-                                    RESUMEN ANUAL {selectedBar.nameLabel}
-                                </h4>
-
-                                <div className="grid grid-cols-3 gap-1.5 md:gap-6 text-center pb-6 border-b border-indigo-200/50">
+                                {selectedBar && (
+                                    <div className="mb-8 bg-indigo-50 border-2 border-indigo-100 rounded-3xl p-3 md:p-10 relative overflow-hidden animate-in fade-in slide-in-from-bottom-2">
+                                        <div className="grid grid-cols-3 gap-1.5 md:gap-6 text-center pb-6 border-b border-indigo-200/50">
                                     {/* Métrica 1: Tickets */}
                                     <div className="flex flex-col items-center justify-center p-2 md:p-4 bg-white/40 rounded-xl md:rounded-2xl border border-white/50 shadow-sm min-w-0 overflow-hidden">
                                         <span className="font-black text-xs md:text-base uppercase tracking-tighter text-indigo-500 mb-1">Tickets</span>
@@ -274,7 +334,6 @@ export default function ComparativaView() {
 
                                 {/* Desglose Mensual - Optimizado para ancho máximo */}
                                 <div className="mt-8 space-y-2">
-                                    <h5 className="text-sm md:text-lg font-black text-indigo-300 uppercase tracking-widest text-center mb-4">Detalle Mensual</h5>
                                     <div className="grid grid-cols-1 gap-2">
                                         {selectedBar.breakdown?.map((b: any, i: number) => {
                                             const monthKey = `${selectedBar.nameLabel}-${b.name}`;
@@ -284,7 +343,10 @@ export default function ComparativaView() {
                                             <div key={i} className="rounded-2xl md:rounded-[2rem] overflow-hidden">
                                                 {/* Header del mes - clickeable */}
                                                 <div
-                                                    onClick={() => setExpandedMonth(isExpanded ? null : monthKey)}
+                                                    onClick={() => {
+                                                        setExpandedMonth(isExpanded ? null : monthKey);
+                                                        onClearHighlight?.(); // Clear highlight when expanding/collapsing month
+                                                    }}
                                                     className={`group flex items-center bg-white p-3 md:p-6 shadow-sm border cursor-pointer transition-all ${
                                                         isExpanded ? 'border-indigo-300 rounded-t-2xl md:rounded-t-[2rem] rounded-b-none' : 'border-transparent hover:border-indigo-300 rounded-2xl md:rounded-[2rem]'
                                                     }`}
@@ -334,6 +396,8 @@ export default function ComparativaView() {
                                                             const dayNum = parseInt(dd);
                                                             const isActuallyOperative = (day.tickets > 0) || day.status === 'operativo';
 
+                                                            const isThisRecordHighlighted = highlightedId === day.id;
+
                                                             // Mapeo de status a etiqueta y color
                                                             const statusMap: Record<string, { label: string; bg: string; text: string; badge: string }> = {
                                                                 lluvia:   { label: 'Lluvia',   bg: 'bg-blue-50',   text: 'text-blue-700',  badge: 'bg-blue-100 text-blue-600' },
@@ -344,7 +408,14 @@ export default function ComparativaView() {
                                                             const st = statusMap[day.status as keyof typeof statusMap] ?? { label: day.status, bg: 'bg-gray-50', text: 'text-gray-600', badge: 'bg-gray-100 text-gray-500' };
 
                                                             if (!isActuallyOperative) return (
-                                                                <div key={di} className={`flex items-center gap-3 ${st.bg} rounded-xl md:rounded-2xl px-3 md:px-6 py-2.5 md:py-4 border border-dashed border-gray-200/80`}>
+                                                                <div 
+                                                                    key={day.id} 
+                                                                    ref={isThisRecordHighlighted ? highlightedRecordRef : null}
+                                                                    onClick={() => onClearHighlight?.()}
+                                                                    className={`flex items-center gap-3 ${st.bg} rounded-xl md:rounded-2xl px-3 md:px-6 py-2.5 md:py-4 border border-dashed border-gray-200/80 ${
+                                                                        isThisRecordHighlighted ? "border-red-300 shadow-lg ring-2 ring-red-500 animate-pulse-red z-10" : ""
+                                                                    }`}
+                                                                >
                                                                     <span className={`flex-shrink-0 text-xs md:text-sm font-black w-7 h-7 md:w-10 md:h-10 flex items-center justify-center rounded-lg md:rounded-xl ${st.badge}`}>
                                                                         {dayNum}
                                                                     </span>
@@ -357,7 +428,14 @@ export default function ComparativaView() {
                                                             );
 
                                                             return (
-                                                                <div key={di} className={`grid grid-cols-4 gap-2 ${day.status !== 'operativo' ? st.bg : 'bg-white'} rounded-xl md:rounded-2xl px-3 md:px-6 py-2.5 md:py-4 border ${day.status !== 'operativo' ? 'border-dashed border-indigo-200' : 'border-gray-100'} hover:border-indigo-300 transition-colors relative overflow-hidden group/day`}>
+                                                                <div 
+                                                                    key={day.id} 
+                                                                    ref={isThisRecordHighlighted ? highlightedRecordRef : null}
+                                                                    onClick={() => onClearHighlight?.()}
+                                                                    className={`grid grid-cols-4 gap-2 ${day.status !== 'operativo' ? st.bg : 'bg-white'} rounded-xl md:rounded-2xl px-3 md:px-6 py-2.5 md:py-4 border ${day.status !== 'operativo' ? 'border-dashed border-indigo-200' : 'border-gray-100'} hover:border-indigo-300 transition-colors relative overflow-hidden group/day ${
+                                                                        isThisRecordHighlighted ? "border-red-300 shadow-lg ring-2 ring-red-500 animate-pulse-red z-10" : ""
+                                                                    }`}
+                                                                >
                                                                     <div className="flex items-center gap-2">
                                                                         <span className={`text-xs md:text-lg font-black ${day.status !== 'operativo' ? st.text + ' ' + st.badge : 'text-indigo-500 bg-indigo-50'} w-7 h-7 md:w-10 md:h-10 flex items-center justify-center rounded-lg md:rounded-xl`}>{dayNum}</span>
                                                                         {day.status !== 'operativo' && (
@@ -458,12 +536,16 @@ export default function ComparativaView() {
                     </>
                 ) : (
                     <div className="text-center py-20 bg-gray-50/50 rounded-3xl border-2 border-dashed border-gray-200">
-                        <div className="text-4xl mb-4">📈</div>
+                                                <div className="flex justify-center mb-6 opacity-20">
+                            <svg className="w-16 h-16 text-indigo-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+                            </svg>
+                        </div>
                         <p className="text-gray-500 font-bold px-10">No hay datos históricos comparables para esta plaza.</p>
                         <p className="text-gray-400 text-sm mt-2">La gráfica se construirá automáticamente al tener registros de distintos meses/años.</p>
                     </div>
                 )}
             </div>
-        </div>
+         </div>
     );
 }

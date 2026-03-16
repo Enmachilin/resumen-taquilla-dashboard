@@ -15,6 +15,16 @@ const firebaseConfig = {
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+// Habilitar persistencia en el cliente (Capacitor/Web)
+if (typeof window !== 'undefined') {
+  import('firebase/firestore').then(({ initializeFirestore, persistentLocalCache, persistentMultipleTabManager }) => {
+    // Esto asegura que los datos se guarden localmente en el móvil
+    initializeFirestore(app, {
+      localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+    });
+  }).catch(err => console.error("Error habilitando persistencia:", err));
+}
+
 // Solo inicializar Auth en el cliente para evitar errores durante el build estático
 const auth = typeof window !== 'undefined' ? getAuth(app) : null;
 
